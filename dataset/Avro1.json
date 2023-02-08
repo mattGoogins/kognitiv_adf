@@ -1,0 +1,166 @@
+{
+	"name": "Avro1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Avro",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "dataexport.prod-03.AzureBlob.integration.63e287fe04a57e400a9e366a+0+0000000000.avro",
+				"folderPath": "currents/dataexport.prod-03.AzureBlob.integration.63e287fe04a57e400a9e366a/event_type=users.messages.email.Send/date=2023-02-07-19/1148/prod-03",
+				"container": "braze-campaign-kpis"
+			}
+		},
+		"schema": {
+			"type": "record",
+			"name": "dataexport.S3.inner.users.messages.email.Send",
+			"doc": "when we send an email to a user",
+			"fields": [
+				{
+					"name": "id",
+					"doc": "globally unique id for this event",
+					"type": "string"
+				},
+				{
+					"name": "user_id",
+					"doc": "BSON id of the user that we sent the email to",
+					"type": "string"
+				},
+				{
+					"name": "dispatch_id",
+					"doc": "dispatch_id of the record",
+					"type": [
+						"null",
+						"string"
+					]
+				},
+				{
+					"name": "external_user_id",
+					"doc": "external user id of the user",
+					"type": [
+						"null",
+						"string"
+					]
+				},
+				{
+					"name": "time",
+					"doc": "unix timestamp at which we sent the email",
+					"type": "int"
+				},
+				{
+					"name": "timezone",
+					"doc": "timezone of the user",
+					"type": [
+						"null",
+						"string"
+					]
+				},
+				{
+					"name": "campaign_id",
+					"doc": "API ID of the campaign this email belongs to",
+					"type": [
+						"null",
+						"string"
+					]
+				},
+				{
+					"name": "campaign_name",
+					"doc": "name of the campaign",
+					"type": [
+						"null",
+						"string"
+					]
+				},
+				{
+					"name": "message_variation_id",
+					"doc": "API ID of the message variation we sent",
+					"type": [
+						"null",
+						"string"
+					]
+				},
+				{
+					"name": "message_variation_name",
+					"doc": "name of the message variation",
+					"type": [
+						"null",
+						"string"
+					]
+				},
+				{
+					"name": "email_address",
+					"doc": "email address of the user",
+					"type": "string"
+				},
+				{
+					"name": "canvas_id",
+					"doc": "API ID of the canvas this email belongs to",
+					"type": [
+						"null",
+						"string"
+					]
+				},
+				{
+					"name": "canvas_name",
+					"doc": "name of the canvas",
+					"type": [
+						"null",
+						"string"
+					]
+				},
+				{
+					"name": "canvas_variation_id",
+					"doc": "API ID of the canvas variation this user received",
+					"type": [
+						"null",
+						"string"
+					]
+				},
+				{
+					"name": "canvas_variation_name",
+					"doc": "Name of the canvas variation this user received",
+					"type": [
+						"null",
+						"string"
+					]
+				},
+				{
+					"name": "canvas_step_id",
+					"doc": "API ID of the canvas step this email belongs to",
+					"type": [
+						"null",
+						"string"
+					]
+				},
+				{
+					"name": "canvas_step_name",
+					"doc": "Name of the canvas step",
+					"type": [
+						"null",
+						"string"
+					]
+				},
+				{
+					"name": "send_id",
+					"doc": "message send ID this message belongs to",
+					"type": [
+						"null",
+						"string"
+					]
+				},
+				{
+					"name": "ip_pool",
+					"doc": "IP Pool from which the email send was made",
+					"type": [
+						"null",
+						"string"
+					]
+				}
+			]
+		}
+	}
+}
