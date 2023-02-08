@@ -1,0 +1,94 @@
+{
+	"name": "DF_Weekly_Redemptions",
+	"properties": {
+		"description": "Dataflow to get the weekly redemptions",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "MemberRewardTbl",
+						"type": "DatasetReference"
+					},
+					"name": "MemberRewardTbl",
+					"description": "Contains member reward information"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "WeeklyRedemptionTbl",
+						"type": "DatasetReference"
+					},
+					"name": "WeeklyRedemptions"
+				}
+			],
+			"transformations": [
+				{
+					"name": "FilterWeeklyRedemptions"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          MEMBER_REWARD_ID as integer,",
+				"          LOYALTY_PROGRAM_ID as integer,",
+				"          MEMBER_ID as integer,",
+				"          REWARD_TYPE_ID as integer,",
+				"          DEVICE_ID as integer,",
+				"          LOCATION_ID as integer,",
+				"          EVENT_ID as integer,",
+				"          MEMBER_REWARD_FLAGS as integer,",
+				"          REWARD_BASE_POINT_VALUE as decimal(19,4),",
+				"          REWARD_POINT_VALUE as decimal(19,4),",
+				"          REWARD_RETAIL_VALUE as decimal(19,4),",
+				"          REWARD_USED_RETAIL_VALUE as decimal(19,4),",
+				"          REWARD_COST_VALUE as decimal(19,4),",
+				"          ISSUE_TIMESTAMP as timestamp,",
+				"          ISSUE_AUDIT_USER as string,",
+				"          ORIGINAL_MEMBER_ID as integer,",
+				"          CANCEL_TIMESTAMP as timestamp,",
+				"          CANCEL_AUDIT_USER as string,",
+				"          REDEEM_TIMESTAMP as timestamp,",
+				"          REDEEM_APP_DAY_ID as integer,",
+				"          REDEEM_AUDIT_USER as string,",
+				"          REDEEM_LOCATION_ID as integer,",
+				"          EXPIRE_TIMESTAMP as timestamp,",
+				"          EXPIRE_APP_DAY_ID as integer,",
+				"          APP_DAY_ID as integer,",
+				"          VARIABLE_REWARD_POINT_ID as integer,",
+				"          VARIABLE_REWARD_COST_ID as integer,",
+				"          REWARD_PROC_STATS_FLAGS as integer,",
+				"          CASHIER_SESSION_ID as integer,",
+				"          CASHIER_SESSION_FLAGS as integer,",
+				"          MEMBER_REWARD_BARCODE as string,",
+				"          MEMBER_REWARD_BARCODE_PIN as string,",
+				"          DOTD_PROMO_ID as integer,",
+				"          DOTD_PROMO_APP_DAY_ID as integer,",
+				"          TRANSFER_TARGET_ID as integer,",
+				"          DELIVERED_COUNT as integer,",
+				"          SALT as string,",
+				"          ORDER_NUMBER as string,",
+				"          GUID as string,",
+				"          VARIABLE_REWARD_FROM_POINTS as decimal(19,4),",
+				"          VARIABLE_REWARD_PER_VALUE as decimal(19,4)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> MemberRewardTbl",
+				"MemberRewardTbl filter(REDEEM_TIMESTAMP >= subDays(currentTimestamp(), 7)) ~> FilterWeeklyRedemptions",
+				"FilterWeeklyRedemptions sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     recreate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> WeeklyRedemptions"
+			]
+		}
+	}
+}

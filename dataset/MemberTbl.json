@@ -1,0 +1,181 @@
+{
+	"name": "MemberTbl",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "kls_database",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "MEMBER_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_PREFIX_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_FIRST_NAME",
+				"type": "nvarchar"
+			},
+			{
+				"name": "MEMBER_MIDDLE_NAME",
+				"type": "nvarchar"
+			},
+			{
+				"name": "MEMBER_LAST_NAME",
+				"type": "nvarchar"
+			},
+			{
+				"name": "MEMBER_SUFFIX",
+				"type": "nvarchar"
+			},
+			{
+				"name": "MEMBER_BIRTHDAY",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "MEMBER_BIRTHDAY_YEAR",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_BIRTHDAY_DAY",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_BIRTHDAY_MONTH",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_AGE",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_ADD_DATE",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "MEMBER_ADD_APP_DAY_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_GENDER",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_PORTAL_PASSWORD",
+				"type": "nvarchar"
+			},
+			{
+				"name": "MEMBER_PASSWORD_HASH",
+				"type": "nvarchar"
+			},
+			{
+				"name": "MEMBER_PASSWORD_SALT",
+				"type": "nvarchar"
+			},
+			{
+				"name": "MEMBER_PASSWORD_CHANGE_DATE",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "MEMBER_PORTAL_PIN",
+				"type": "nvarchar"
+			},
+			{
+				"name": "MEMBER_CONTACT_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_EMAIL_OPT_LAST_CHANGE",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "MEMBER_MAIL_OPT_LAST_CHANGE",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "MEMBER_PHONE_OPT_LAST_CHANGE",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "MEMBER_TEXT_OPT_LAST_CHANGE",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "MEMBER_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_EXPORT_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "CORE_USER_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_PROC_STATS_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_PREF_DELIVERY_NON_OFFERS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_PREF_DELIVERY_OFFERS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_PREF_LANGUAGE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "HEAD_MEMBER_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "GUID",
+				"type": "uniqueidentifier"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "MEMBER"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

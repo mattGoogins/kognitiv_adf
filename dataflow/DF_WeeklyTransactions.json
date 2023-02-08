@@ -1,0 +1,87 @@
+{
+	"name": "DF_WeeklyTransactions",
+	"properties": {
+		"description": "Get Transaction based on dates",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "TransactionTbl",
+						"type": "DatasetReference"
+					},
+					"name": "TransactionTbl",
+					"description": "Contains all Transaction data"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "WeeklyTransactionsTbl",
+						"type": "DatasetReference"
+					},
+					"name": "WeeklyTransactions"
+				}
+			],
+			"transformations": [
+				{
+					"name": "FilterWeeklyTransactions"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          APP_TRANSACTION_ID as integer,",
+				"          LOYALTY_PROGRAM_ID as integer,",
+				"          MEMBER_ID as integer,",
+				"          TRANSACTION_TYPE_ID as integer,",
+				"          LOCATION_ID as integer,",
+				"          EVENT_ID as integer,",
+				"          DEVICE_ID as integer,",
+				"          IMPORT_SOURCE_ID as integer,",
+				"          PARI_DEVICE_TYPE_ID as integer,",
+				"          PARI_TRACK_ID as integer,",
+				"          PARI_POOL_ID as integer,",
+				"          PARI_BET_COUNT as integer,",
+				"          PARI_RACE as integer,",
+				"          TRANSACTION_TIMESTAMP as timestamp,",
+				"          ACTIVITY_TIMESTAMP as timestamp,",
+				"          APP_DAY_ID as integer,",
+				"          BOOKING_APP_DAY_ID as integer,",
+				"          TRANSACTION_POINT_ID as integer,",
+				"          TRANSACTION_PROFIT_ID as integer,",
+				"          TRANSACTION_RULE_ID as integer,",
+				"          TRANSACTION_RETAIL_VALUE as decimal(19,4),",
+				"          TRANSACTION_PROFIT_VALUE as decimal(19,4),",
+				"          TRANSACTION_WON_VALUE as decimal(19,4),",
+				"          TRANSACTION_BASE_POINT_VALUE as decimal(19,4),",
+				"          TRANSACTION_POINT_VALUE as decimal(19,4),",
+				"          TRANSACTION_EXTERNAL_REF as string,",
+				"          TRANSACTION_FLAGS as integer,",
+				"          TRANSACTION_PROC_STATS_FLAGS as integer,",
+				"          MEMBER_ACCOUNT_ID_USED as string,",
+				"          APP_TRANSACTION_BASKET_ID as integer,",
+				"          APP_TRANSACTION_AUDIT_USER as string,",
+				"          TRANSFER_APP_TRANSACTION_ID as integer,",
+				"          GUID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> TransactionTbl",
+				"TransactionTbl filter(TRANSACTION_TIMESTAMP >= subDays(currentTimestamp(), 7)) ~> FilterWeeklyTransactions",
+				"FilterWeeklyTransactions sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     recreate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 1,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> WeeklyTransactions"
+			]
+		}
+	}
+}

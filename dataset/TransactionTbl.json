@@ -1,0 +1,186 @@
+{
+	"name": "TransactionTbl",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "kls_database",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "APP_TRANSACTION_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "LOYALTY_PROGRAM_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TRANSACTION_TYPE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "LOCATION_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "EVENT_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DEVICE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "IMPORT_SOURCE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "PARI_DEVICE_TYPE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "PARI_TRACK_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "PARI_POOL_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "PARI_BET_COUNT",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "PARI_RACE",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TRANSACTION_TIMESTAMP",
+				"type": "smalldatetime",
+				"precision": 16,
+				"scale": 0
+			},
+			{
+				"name": "ACTIVITY_TIMESTAMP",
+				"type": "smalldatetime",
+				"precision": 16,
+				"scale": 0
+			},
+			{
+				"name": "APP_DAY_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "BOOKING_APP_DAY_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TRANSACTION_POINT_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TRANSACTION_PROFIT_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TRANSACTION_RULE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TRANSACTION_RETAIL_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "TRANSACTION_PROFIT_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "TRANSACTION_WON_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "TRANSACTION_BASE_POINT_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "TRANSACTION_POINT_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "TRANSACTION_EXTERNAL_REF",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TRANSACTION_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TRANSACTION_PROC_STATS_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_ACCOUNT_ID_USED",
+				"type": "nvarchar"
+			},
+			{
+				"name": "APP_TRANSACTION_BASKET_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "APP_TRANSACTION_AUDIT_USER",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TRANSFER_APP_TRANSACTION_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "GUID",
+				"type": "uniqueidentifier"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "APP_TRANSACTION"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

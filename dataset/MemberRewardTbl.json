@@ -1,0 +1,226 @@
+{
+	"name": "MemberRewardTbl",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "kls_database",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "MEMBER_REWARD_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "LOYALTY_PROGRAM_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_TYPE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DEVICE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "LOCATION_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "EVENT_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_REWARD_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_BASE_POINT_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "REWARD_POINT_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "REWARD_RETAIL_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "REWARD_USED_RETAIL_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "REWARD_COST_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "ISSUE_TIMESTAMP",
+				"type": "smalldatetime",
+				"precision": 16,
+				"scale": 0
+			},
+			{
+				"name": "ISSUE_AUDIT_USER",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ORIGINAL_MEMBER_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "CANCEL_TIMESTAMP",
+				"type": "smalldatetime",
+				"precision": 16,
+				"scale": 0
+			},
+			{
+				"name": "CANCEL_AUDIT_USER",
+				"type": "nvarchar"
+			},
+			{
+				"name": "REDEEM_TIMESTAMP",
+				"type": "smalldatetime",
+				"precision": 16,
+				"scale": 0
+			},
+			{
+				"name": "REDEEM_APP_DAY_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REDEEM_AUDIT_USER",
+				"type": "nvarchar"
+			},
+			{
+				"name": "REDEEM_LOCATION_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "EXPIRE_TIMESTAMP",
+				"type": "smalldatetime",
+				"precision": 16,
+				"scale": 0
+			},
+			{
+				"name": "EXPIRE_APP_DAY_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "APP_DAY_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "VARIABLE_REWARD_POINT_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "VARIABLE_REWARD_COST_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_PROC_STATS_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "CASHIER_SESSION_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "CASHIER_SESSION_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_REWARD_BARCODE",
+				"type": "varchar"
+			},
+			{
+				"name": "MEMBER_REWARD_BARCODE_PIN",
+				"type": "varchar"
+			},
+			{
+				"name": "DOTD_PROMO_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DOTD_PROMO_APP_DAY_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TRANSFER_TARGET_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DELIVERED_COUNT",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "SALT",
+				"type": "varchar"
+			},
+			{
+				"name": "ORDER_NUMBER",
+				"type": "varchar"
+			},
+			{
+				"name": "GUID",
+				"type": "uniqueidentifier"
+			},
+			{
+				"name": "VARIABLE_REWARD_FROM_POINTS",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "VARIABLE_REWARD_PER_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "MEMBER_REWARD"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

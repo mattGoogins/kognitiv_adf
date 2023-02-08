@@ -1,0 +1,36 @@
+{
+	"name": "Get_Weekly_Transactions",
+	"properties": {
+		"description": "Gets Weekly Transactions based on the CurrentTimestamp",
+		"activities": [
+			{
+				"name": "GetWeeklyTransactions",
+				"description": "Gets Weekly Transactions based on the CurrentTimestamp",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_WeeklyTransactions",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-01-26T05:43:53Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

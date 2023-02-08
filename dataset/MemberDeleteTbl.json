@@ -1,0 +1,93 @@
+{
+	"name": "MemberDeleteTbl",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "kls_database",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "MEMBER_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "COMBINED_INTO_MEMBER_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_NAME",
+				"type": "nvarchar"
+			},
+			{
+				"name": "AUDIT_USER",
+				"type": "nvarchar"
+			},
+			{
+				"name": "MEMBER_ACCOUNT_ID",
+				"type": "nvarchar"
+			},
+			{
+				"name": "MEMBER_LAST_EMAIL",
+				"type": "nvarchar"
+			},
+			{
+				"name": "MEMBER_DELETE_TIMESTAMP",
+				"type": "smalldatetime",
+				"precision": 16,
+				"scale": 0
+			},
+			{
+				"name": "AUDIT_NOTE",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TOTAL_POINTS_EARNED",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "TOTAL_POINTS_DEDUCTED",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "TOTAL_POINTS_USED",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "TOTAL_POINTS_EXPIRED",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "MEMBER_DELETE_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MEMBER_DELETE_COMPLETE_TIMESTAMP",
+				"type": "smalldatetime",
+				"precision": 16,
+				"scale": 0
+			},
+			{
+				"name": "GUID",
+				"type": "uniqueidentifier"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "MEMBER_DELETE"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

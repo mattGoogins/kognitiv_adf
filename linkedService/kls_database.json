@@ -1,0 +1,12 @@
+{
+	"name": "kls_database",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"connectionString": "integrated security=False;encrypt=True;connection timeout=30;data source=klssqldatabase.database.windows.net;initial catalog=klsDatabase;user id=klsadmin",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQEQxNzkwREJFLTdBQkYtNDVBRS1CMEE2LTU0Q0YxOTNBRTI0MF85YjAwMzI0ZC0yYjVhLTRkM2ItYjlkNC05OWRhN2E5MzdhOGMiDQp9"
+		}
+	}
+}

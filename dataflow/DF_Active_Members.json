@@ -1,0 +1,123 @@
+{
+	"name": "DF_Active_Members",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "MemberTbl",
+						"type": "DatasetReference"
+					},
+					"name": "MemberTbl"
+				},
+				{
+					"dataset": {
+						"referenceName": "MemberDeleteTbl",
+						"type": "DatasetReference"
+					},
+					"name": "MemberDeleteTbl"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ActiveMembers",
+						"type": "DatasetReference"
+					},
+					"name": "ActiveMemberCount"
+				}
+			],
+			"transformations": [
+				{
+					"name": "ActiveMembersOnly"
+				},
+				{
+					"name": "GetActiveMemberCount",
+					"description": "Aggregating data by producing column 'member_count'"
+				},
+				{
+					"name": "AddCurrentTimestamp"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          MEMBER_ID as integer,",
+				"          MEMBER_PREFIX_ID as integer,",
+				"          MEMBER_FIRST_NAME as string,",
+				"          MEMBER_MIDDLE_NAME as string,",
+				"          MEMBER_LAST_NAME as string,",
+				"          MEMBER_SUFFIX as string,",
+				"          MEMBER_BIRTHDAY as timestamp,",
+				"          MEMBER_BIRTHDAY_YEAR as integer,",
+				"          MEMBER_BIRTHDAY_DAY as integer,",
+				"          MEMBER_BIRTHDAY_MONTH as integer,",
+				"          MEMBER_AGE as integer,",
+				"          MEMBER_ADD_DATE as timestamp,",
+				"          MEMBER_ADD_APP_DAY_ID as integer,",
+				"          MEMBER_GENDER as integer,",
+				"          MEMBER_PORTAL_PASSWORD as string,",
+				"          MEMBER_PASSWORD_HASH as string,",
+				"          MEMBER_PASSWORD_SALT as string,",
+				"          MEMBER_PASSWORD_CHANGE_DATE as timestamp,",
+				"          MEMBER_PORTAL_PIN as string,",
+				"          MEMBER_CONTACT_FLAGS as integer,",
+				"          MEMBER_EMAIL_OPT_LAST_CHANGE as timestamp,",
+				"          MEMBER_MAIL_OPT_LAST_CHANGE as timestamp,",
+				"          MEMBER_PHONE_OPT_LAST_CHANGE as timestamp,",
+				"          MEMBER_TEXT_OPT_LAST_CHANGE as timestamp,",
+				"          MEMBER_FLAGS as integer,",
+				"          MEMBER_EXPORT_FLAGS as integer,",
+				"          CORE_USER_ID as integer,",
+				"          MEMBER_PROC_STATS_FLAGS as integer,",
+				"          MEMBER_PREF_DELIVERY_NON_OFFERS as integer,",
+				"          MEMBER_PREF_DELIVERY_OFFERS as integer,",
+				"          MEMBER_PREF_LANGUAGE_ID as integer,",
+				"          HEAD_MEMBER_ID as integer,",
+				"          GUID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> MemberTbl",
+				"source(output(",
+				"          MEMBER_ID as integer,",
+				"          COMBINED_INTO_MEMBER_ID as integer,",
+				"          MEMBER_NAME as string,",
+				"          AUDIT_USER as string,",
+				"          MEMBER_ACCOUNT_ID as string,",
+				"          MEMBER_LAST_EMAIL as string,",
+				"          MEMBER_DELETE_TIMESTAMP as timestamp,",
+				"          AUDIT_NOTE as string,",
+				"          TOTAL_POINTS_EARNED as decimal(19,4),",
+				"          TOTAL_POINTS_DEDUCTED as decimal(19,4),",
+				"          TOTAL_POINTS_USED as decimal(19,4),",
+				"          TOTAL_POINTS_EXPIRED as decimal(19,4),",
+				"          MEMBER_DELETE_FLAGS as integer,",
+				"          MEMBER_DELETE_COMPLETE_TIMESTAMP as timestamp,",
+				"          GUID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> MemberDeleteTbl",
+				"MemberTbl, MemberDeleteTbl exists(MemberTbl@MEMBER_ID == MemberDeleteTbl@MEMBER_ID,",
+				"     negate:true,",
+				"     broadcast: 'auto')~> ActiveMembersOnly",
+				"ActiveMembersOnly aggregate(member_count = count(MEMBER_ID)) ~> GetActiveMemberCount",
+				"GetActiveMemberCount derive(timestamp = currentTimestamp()) ~> AddCurrentTimestamp",
+				"AddCurrentTimestamp sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 1,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> ActiveMemberCount"
+			]
+		}
+	}
+}
