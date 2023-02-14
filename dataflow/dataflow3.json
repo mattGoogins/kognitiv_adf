@@ -13,7 +13,11 @@
 				}
 			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "parse1"
+				}
+			],
 			"scriptLines": [
 				"source(allowSchemaDrift: true,",
 				"     validateSchema: false,",
@@ -21,7 +25,9 @@
 				"     format: 'avro',",
 				"     container: 'braze-campaign-kpis',",
 				"     folderPath: 'currents/dataexport.prod-03.AzureBlob.integration.63e287fe04a57e400a9e366a/event_type=users.messages.email.Send/date=2023-02-07-17/1148/prod-03',",
-				"     fileName: 'dataexport.prod-03.AzureBlob.integration.63e287fe04a57e400a9e366a+1+0000000000.avro') ~> source1"
+				"     fileName: 'dataexport.prod-03.AzureBlob.integration.63e287fe04a57e400a9e366a+1+0000000000.avro') ~> source1",
+				"source1 parse(format: 'json',",
+				"     documentForm: 'documentPerLine') ~> parse1"
 			]
 		}
 	}
