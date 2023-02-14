@@ -1,0 +1,67 @@
+{
+	"name": "Count_Redemptions",
+	"properties": {
+		"description": "Counts the number weekly redemptions",
+		"activities": [
+			{
+				"name": "Count_Weekly_Redemptions",
+				"description": "Counts the number of weekly redemptions",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_Weekly_Reward_Redemptions",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Total_Redemptions",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Count_Weekly_Redemptions",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_Total_Reward_Redemptions",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-02-12T15:34:56Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

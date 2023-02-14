@@ -1,0 +1,292 @@
+{
+	"name": "RewardTypeTbl",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "kls_database",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "REWARD_TYPE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "LOYALTY_PROGRAM_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_CATEGORY_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_TYPE_NAME",
+				"type": "nvarchar"
+			},
+			{
+				"name": "REWARD_TYPE_RETAIL_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "REWARD_TYPE_BASE_POINT_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "REWARD_TYPE_POINT_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "REWARD_TYPE_COST_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "REWARD_TYPE_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_TYPE_FILTER_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_TYPE_DESCRIPTION",
+				"type": "nvarchar"
+			},
+			{
+				"name": "REWARD_TYPE_ISSUE_LIMIT_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_TYPE_ISSUE_LIMIT",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_TYPE_MEMBER_ISSUE_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_TYPE_MEMBER_ISSUE_PARAM",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_TYPE_MEMBER_ISSUE_RANGE",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_TYPE_SLIP_FORMAT_TYPE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_TYPE_BARCODE_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_TYPE_BARCODE",
+				"type": "varchar"
+			},
+			{
+				"name": "REWARD_TYPE_MORE_INFO_URL",
+				"type": "nvarchar"
+			},
+			{
+				"name": "REWARD_TYPE_EXPIRE_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_TYPE_EXPIRE_PARAM",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_TYPE_EXPIRE_DATESTAMP",
+				"type": "smalldatetime",
+				"precision": 16,
+				"scale": 0
+			},
+			{
+				"name": "APP_SLIP_TYPE_REWARD_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DEVICE_SLIP_TYPE_REWARD_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "VARIABLE_REWARD_COST_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "VARIABLE_REWARD_POINT_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "VARIABLE_REWARD_AMT_MIN",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "VARIABLE_REWARD_AMT_MAX",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "THUMBNAIL_REWARD_TYPE_IMAGE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "FEATURE_REWARD_TYPE_IMAGE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DETAIL_REWARD_TYPE_IMAGE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_TYPE_EXTERNAL_REF",
+				"type": "nvarchar"
+			},
+			{
+				"name": "STAT_TOTAL_ISSUED",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "STAT_TOTAL_REDEEMED",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "STAT_TOTAL_CANCELLED",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "START_FROM_APP_DAY_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_TYPE_DELIVERY_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "EMAIL_TEMPLATE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TEXT_TEMPLATE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "NOTIFY_EMAIL_TEMPLATE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "NOTIFY_TEXT_TEMPLATE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "GUID",
+				"type": "uniqueidentifier"
+			},
+			{
+				"name": "REWARD_TYPE_ISSUE_COUNT",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "REWARD_TYPE_ISSUE_COUNT_TIMESTAMP",
+				"type": "smalldatetime",
+				"precision": 16,
+				"scale": 0
+			},
+			{
+				"name": "VARIABLE_REWARD_FROM_POINTS",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "VARIABLE_REWARD_PER_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "TOTAL_REDEEMED",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TOTAL_EXPIRED",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TOTAL_ISSUED_IN_30_DAYS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TOTAL_ISSUED_IN_31_TO_60_DAYS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TOTAL_ISSUED_IN_61_TO_90_DAYS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TOTAL_ISSUED_OVER_90_DAYS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TOTAL_CANCELLED",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "REWARD_TYPE"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

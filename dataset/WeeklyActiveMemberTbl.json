@@ -1,0 +1,17 @@
+{
+	"name": "WeeklyActiveMemberTbl",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "kls_database",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "WEEKLY_ACTIVE_MEMBER"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

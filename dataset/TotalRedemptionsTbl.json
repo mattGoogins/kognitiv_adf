@@ -1,0 +1,17 @@
+{
+	"name": "TotalRedemptionsTbl",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "kls_database",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "TOTAL_REDEMPTIONS"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

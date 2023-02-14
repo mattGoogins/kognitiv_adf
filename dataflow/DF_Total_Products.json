@@ -1,0 +1,63 @@
+{
+	"name": "DF_Total_Products",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ProductTbl",
+						"type": "DatasetReference"
+					},
+					"name": "ProductTbl"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "TotalProductTbl",
+						"type": "DatasetReference"
+					},
+					"name": "TotalProductTbl"
+				}
+			],
+			"transformations": [
+				{
+					"name": "CountTotalProducts",
+					"description": "Counting the total number of Products"
+				},
+				{
+					"name": "Timestamp",
+					"description": "Adding the timestamp"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          PRODUCT_ITEM_ID as integer,",
+				"          PRODUCT_ITEM_NAME as string,",
+				"          PRODUCT_ITEM_FLAGS as integer,",
+				"          PRODUCT_ITEM_EXTERNAL_REF as string,",
+				"          GUID as string,",
+				"          PRODUCT_ITEM_DELETE_REF_FLAGS as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> ProductTbl",
+				"Timestamp aggregate(groupBy(TIMESTAMP),",
+				"     TOTAL_PRODUCT_COUNT = countAllDistinct(PRODUCT_ITEM_ID)) ~> CountTotalProducts",
+				"ProductTbl derive(TIMESTAMP = currentTimestamp()) ~> Timestamp",
+				"CountTotalProducts sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> TotalProductTbl"
+			]
+		}
+	}
+}

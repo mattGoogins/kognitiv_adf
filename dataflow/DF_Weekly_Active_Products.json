@@ -1,0 +1,181 @@
+{
+	"name": "DF_Weekly_Active_Products",
+	"properties": {
+		"description": "Counts the weekly number of active products",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "TransactionTbl",
+						"type": "DatasetReference"
+					},
+					"name": "AppTransactionTbl"
+				},
+				{
+					"dataset": {
+						"referenceName": "AppTransactionBasketProductTbl",
+						"type": "DatasetReference"
+					},
+					"name": "AppTransactionBasketProductTbl"
+				},
+				{
+					"dataset": {
+						"referenceName": "ProductTbl",
+						"type": "DatasetReference"
+					},
+					"name": "ProductTbl"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "WeeklyActiveProductsTbl",
+						"type": "DatasetReference"
+					},
+					"name": "WeeklyActiveProductsTbl"
+				}
+			],
+			"transformations": [
+				{
+					"name": "AppTransAppJoinTransBasketProduct"
+				},
+				{
+					"name": "ProductJoinAppTransactionBasket"
+				},
+				{
+					"name": "ProductItemID"
+				},
+				{
+					"name": "ProductItemName"
+				},
+				{
+					"name": "JoinAll"
+				},
+				{
+					"name": "CountActiveProducts"
+				},
+				{
+					"name": "Timestamp"
+				},
+				{
+					"name": "FilterWeekly"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          APP_TRANSACTION_ID as integer,",
+				"          LOYALTY_PROGRAM_ID as integer,",
+				"          MEMBER_ID as integer,",
+				"          TRANSACTION_TYPE_ID as integer,",
+				"          LOCATION_ID as integer,",
+				"          EVENT_ID as integer,",
+				"          DEVICE_ID as integer,",
+				"          IMPORT_SOURCE_ID as integer,",
+				"          PARI_DEVICE_TYPE_ID as integer,",
+				"          PARI_TRACK_ID as integer,",
+				"          PARI_POOL_ID as integer,",
+				"          PARI_BET_COUNT as integer,",
+				"          PARI_RACE as integer,",
+				"          TRANSACTION_TIMESTAMP as timestamp,",
+				"          ACTIVITY_TIMESTAMP as timestamp,",
+				"          APP_DAY_ID as integer,",
+				"          BOOKING_APP_DAY_ID as integer,",
+				"          TRANSACTION_POINT_ID as integer,",
+				"          TRANSACTION_PROFIT_ID as integer,",
+				"          TRANSACTION_RULE_ID as integer,",
+				"          TRANSACTION_RETAIL_VALUE as decimal(19,4),",
+				"          TRANSACTION_PROFIT_VALUE as decimal(19,4),",
+				"          TRANSACTION_WON_VALUE as decimal(19,4),",
+				"          TRANSACTION_BASE_POINT_VALUE as decimal(19,4),",
+				"          TRANSACTION_POINT_VALUE as decimal(19,4),",
+				"          TRANSACTION_EXTERNAL_REF as string,",
+				"          TRANSACTION_FLAGS as integer,",
+				"          TRANSACTION_PROC_STATS_FLAGS as integer,",
+				"          MEMBER_ACCOUNT_ID_USED as string,",
+				"          APP_TRANSACTION_BASKET_ID as integer,",
+				"          APP_TRANSACTION_AUDIT_USER as string,",
+				"          TRANSFER_APP_TRANSACTION_ID as integer,",
+				"          GUID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> AppTransactionTbl",
+				"source(output(",
+				"          APP_TRANSACTION_BASKET_ID as integer,",
+				"          APP_TRANSACTION_BASKET_PRODUCT_ID as integer,",
+				"          PRODUCT_ITEM_ID as integer,",
+				"          FINAL_UNIT_PRICE as decimal(19,4),",
+				"          BASE_POINTS as decimal(19,4),",
+				"          BONUS_POINTS as decimal(19,4),",
+				"          PROFIT_VALUE as decimal(19,4),",
+				"          APP_TRANSACTION_BASKET_PRODUCT_FLAGS as integer,",
+				"          GUID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> AppTransactionBasketProductTbl",
+				"source(output(",
+				"          PRODUCT_ITEM_ID as integer,",
+				"          PRODUCT_ITEM_NAME as string,",
+				"          PRODUCT_ITEM_FLAGS as integer,",
+				"          PRODUCT_ITEM_EXTERNAL_REF as string,",
+				"          GUID as string,",
+				"          PRODUCT_ITEM_DELETE_REF_FLAGS as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> ProductTbl",
+				"AppTransactionTbl, AppTransactionBasketProductTbl join(AppTransactionTbl@APP_TRANSACTION_BASKET_ID == AppTransactionBasketProductTbl@APP_TRANSACTION_BASKET_ID,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> AppTransAppJoinTransBasketProduct",
+				"AppTransactionBasketProductTbl, ProductTbl join(AppTransactionBasketProductTbl@PRODUCT_ITEM_ID == ProductTbl@PRODUCT_ITEM_ID,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> ProductJoinAppTransactionBasket",
+				"AppTransAppJoinTransBasketProduct select(mapColumn(",
+				"          PRODUCT_ITEM_ID,",
+				"          APP_TRANSACTION_ID,",
+				"          APP_TRANSACTION_BASKET_ID = AppTransactionTbl@APP_TRANSACTION_BASKET_ID,",
+				"          TRANSACTION_TIMESTAMP",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> ProductItemID",
+				"ProductJoinAppTransactionBasket select(mapColumn(",
+				"          APP_TRANSACTION_BASKET_ID,",
+				"          PRODUCT_ITEM_NAME",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> ProductItemName",
+				"ProductItemID, ProductItemName join(ProductItemID@APP_TRANSACTION_BASKET_ID == ProductItemName@APP_TRANSACTION_BASKET_ID,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> JoinAll",
+				"Timestamp aggregate(groupBy(TIMESTAMP,",
+				"          TRANSACTION_TIMESTAMP,",
+				"          PRODUCT_ITEM_ID,",
+				"          PRODUCT_ITEM_NAME),",
+				"     ACTIVE_PRODUCT_COUNT = countAllDistinct(APP_TRANSACTION_ID)) ~> CountActiveProducts",
+				"FilterWeekly derive(TIMESTAMP = currentTimestamp()) ~> Timestamp",
+				"JoinAll filter(TRANSACTION_TIMESTAMP >= subDays(currentTimestamp(), 7)) ~> FilterWeekly",
+				"CountActiveProducts sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> WeeklyActiveProductsTbl"
+			]
+		}
+	}
+}

@@ -1,0 +1,9 @@
+{
+	"name": "kls-dev",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "bb585240-4235-41ba-bdb0-e4b680ac5ca4",
+		"tenantId": "5bbed656-4f0a-43a0-bef8-c91aecbe75a3"
+	}
+}

@@ -1,0 +1,66 @@
+{
+	"name": "AppTransactionBasketProductTbl",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "kls_database",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "APP_TRANSACTION_BASKET_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "APP_TRANSACTION_BASKET_PRODUCT_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "PRODUCT_ITEM_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "FINAL_UNIT_PRICE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "BASE_POINTS",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "BONUS_POINTS",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "PROFIT_VALUE",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "APP_TRANSACTION_BASKET_PRODUCT_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "GUID",
+				"type": "uniqueidentifier"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "APP_TRANSACTION_BASKET_PRODUCT"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

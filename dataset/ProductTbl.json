@@ -1,0 +1,45 @@
+{
+	"name": "ProductTbl",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "kls_database",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "PRODUCT_ITEM_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "PRODUCT_ITEM_NAME",
+				"type": "nchar"
+			},
+			{
+				"name": "PRODUCT_ITEM_FLAGS",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "PRODUCT_ITEM_EXTERNAL_REF",
+				"type": "nchar"
+			},
+			{
+				"name": "GUID",
+				"type": "uniqueidentifier"
+			},
+			{
+				"name": "PRODUCT_ITEM_DELETE_REF_FLAGS",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "PRODUCT_ITEM"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

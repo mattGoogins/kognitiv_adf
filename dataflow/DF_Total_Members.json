@@ -1,0 +1,89 @@
+{
+	"name": "DF_Total_Members",
+	"properties": {
+		"description": "Counts the total number of members",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "MemberTbl",
+						"type": "DatasetReference"
+					},
+					"name": "MemberTbl"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "TotalMemberTbl",
+						"type": "DatasetReference"
+					},
+					"name": "TotalMemberTbl"
+				}
+			],
+			"transformations": [
+				{
+					"name": "Timestamp"
+				},
+				{
+					"name": "TotalMemberCount"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          MEMBER_ID as integer,",
+				"          MEMBER_PREFIX_ID as integer,",
+				"          MEMBER_FIRST_NAME as string,",
+				"          MEMBER_MIDDLE_NAME as string,",
+				"          MEMBER_LAST_NAME as string,",
+				"          MEMBER_SUFFIX as string,",
+				"          MEMBER_BIRTHDAY as timestamp,",
+				"          MEMBER_BIRTHDAY_YEAR as integer,",
+				"          MEMBER_BIRTHDAY_DAY as integer,",
+				"          MEMBER_BIRTHDAY_MONTH as integer,",
+				"          MEMBER_AGE as integer,",
+				"          MEMBER_ADD_DATE as timestamp,",
+				"          MEMBER_ADD_APP_DAY_ID as integer,",
+				"          MEMBER_GENDER as integer,",
+				"          MEMBER_PORTAL_PASSWORD as string,",
+				"          MEMBER_PASSWORD_HASH as string,",
+				"          MEMBER_PASSWORD_SALT as string,",
+				"          MEMBER_PASSWORD_CHANGE_DATE as timestamp,",
+				"          MEMBER_PORTAL_PIN as string,",
+				"          MEMBER_CONTACT_FLAGS as integer,",
+				"          MEMBER_EMAIL_OPT_LAST_CHANGE as timestamp,",
+				"          MEMBER_MAIL_OPT_LAST_CHANGE as timestamp,",
+				"          MEMBER_PHONE_OPT_LAST_CHANGE as timestamp,",
+				"          MEMBER_TEXT_OPT_LAST_CHANGE as timestamp,",
+				"          MEMBER_FLAGS as integer,",
+				"          MEMBER_EXPORT_FLAGS as integer,",
+				"          CORE_USER_ID as integer,",
+				"          MEMBER_PROC_STATS_FLAGS as integer,",
+				"          MEMBER_PREF_DELIVERY_NON_OFFERS as integer,",
+				"          MEMBER_PREF_DELIVERY_OFFERS as integer,",
+				"          MEMBER_PREF_LANGUAGE_ID as integer,",
+				"          HEAD_MEMBER_ID as integer,",
+				"          GUID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> MemberTbl",
+				"MemberTbl derive(TIMESTAMP = currentTimestamp()) ~> Timestamp",
+				"Timestamp aggregate(groupBy(TIMESTAMP),",
+				"     TOTAL_MEMBER_COUNT = countAllDistinct(MEMBER_ID)) ~> TotalMemberCount",
+				"TotalMemberCount sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> TotalMemberTbl"
+			]
+		}
+	}
+}

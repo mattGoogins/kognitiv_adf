@@ -1,0 +1,17 @@
+{
+	"name": "ActiveMemberTbl",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "kls_database",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "ACTIVE_MEMBERS"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
