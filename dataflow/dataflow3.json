@@ -1,0 +1,25 @@
+{
+	"name": "dataflow3",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzureBlobStorage1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'avro') ~> source1"
+			]
+		}
+	}
+}
