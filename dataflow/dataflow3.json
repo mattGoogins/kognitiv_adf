@@ -6,7 +6,7 @@
 			"sources": [
 				{
 					"linkedService": {
-						"referenceName": "AzureBlobStorage1",
+						"referenceName": "AzureBlobStorage2",
 						"type": "LinkedServiceReference"
 					},
 					"name": "source1"
@@ -18,7 +18,10 @@
 				"source(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
-				"     format: 'avro') ~> source1"
+				"     format: 'avro',",
+				"     container: 'braze-campaign-kpis',",
+				"     folderPath: 'currents/dataexport.prod-03.AzureBlob.integration.63e287fe04a57e400a9e366a/event_type=users.messages.email.Send/date=2023-02-07-17/1148/prod-03',",
+				"     fileName: 'dataexport.prod-03.AzureBlob.integration.63e287fe04a57e400a9e366a+1+0000000000.avro') ~> source1"
 			]
 		}
 	}
