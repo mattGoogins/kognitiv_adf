@@ -19,9 +19,7 @@
 						"type": "AvroSource",
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
-							"recursive": true,
-							"wildcardFolderPath": "currents/dataexport.prod-03.AzureBlob.integration.63e287fe04a57e400a9e366a/event_type=users.messages.email.Send/date=2023-02-07-19/1148/prod-3",
-							"wildcardFileName": "*.avro",
+							"recursive": false,
 							"enablePartitionDiscovery": false
 						}
 					},
