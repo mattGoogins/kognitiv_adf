@@ -1,0 +1,25 @@
+{
+	"name": "myCSVfile",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage2",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "dataexport.prod-03.AzureBlob.integration.63e287fe04a57e400a9e366a+0+0000000002.avro",
+				"folderPath": "currents/dataexport.prod-03.AzureBlob.integration.63e287fe04a57e400a9e366a/event_type=users.messages.email.Send/date=2023-02-07-19/1148/prod-03",
+				"container": "braze-campaign-kpis"
+			},
+			"columnDelimiter": "|",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"nullValue": "null_val",
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
