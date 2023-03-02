@@ -3,42 +3,11 @@
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [
-				{
-					"dataset": {
-						"referenceName": "Avro1",
-						"type": "DatasetReference"
-					},
-					"name": "source1"
-				}
-			],
+			"sources": [],
 			"sinks": [],
 			"transformations": [],
 			"scriptLines": [
-				"source(output(",
-				"          id as string,",
-				"          user_id as string,",
-				"          dispatch_id as string,",
-				"          external_user_id as string,",
-				"          time as integer,",
-				"          timezone as string,",
-				"          campaign_id as string,",
-				"          campaign_name as string,",
-				"          message_variation_id as string,",
-				"          message_variation_name as string,",
-				"          email_address as string,",
-				"          canvas_id as string,",
-				"          canvas_name as string,",
-				"          canvas_variation_id as string,",
-				"          canvas_variation_name as string,",
-				"          canvas_step_id as string,",
-				"          canvas_step_name as string,",
-				"          send_id as string,",
-				"          ip_pool as string",
-				"     ),",
-				"     allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false) ~> source1"
+				""
 			]
 		}
 	}
