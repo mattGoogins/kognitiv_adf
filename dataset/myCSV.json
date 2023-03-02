@@ -14,7 +14,7 @@
 				"folderPath": "currents",
 				"container": "braze-campaign-kpis"
 			},
-			"columnDelimiter": ",",
+			"columnDelimiter": "|",
 			"escapeChar": "\\",
 			"firstRowAsHeader": true,
 			"quoteChar": "\""
