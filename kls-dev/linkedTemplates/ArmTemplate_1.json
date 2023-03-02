@@ -1,0 +1,2084 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "kls-dev"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/WeeklyPromotionTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "WEEKLY_PROMOTION"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WeeklyRedemptionsTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "WEEKLY_REDEMPTIONS"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WeeklyTransactionsTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "WEEKLY_TRANSACTION"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/myCSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "hello.csv",
+						"folderPath": "currents",
+						"container": "braze-campaign-kpis"
+					},
+					"columnDelimiter": "|",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/braze_data2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Transform from AVRO to CSV",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AvroSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": false,
+									"enablePartitionDiscovery": false
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "Avro1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "myCSV",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/myCSV')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_Active_Members')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "MemberTbl",
+								"type": "DatasetReference"
+							},
+							"name": "MemberTbl"
+						},
+						{
+							"dataset": {
+								"referenceName": "MemberDeleteTbl",
+								"type": "DatasetReference"
+							},
+							"name": "MemberDeleteTbl"
+						},
+						{
+							"dataset": {
+								"referenceName": "TransactionTbl",
+								"type": "DatasetReference"
+							},
+							"name": "TransactionTbl"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ActiveMemberTbl",
+								"type": "DatasetReference"
+							},
+							"name": "ActiveMemberTbl"
+						}
+					],
+					"transformations": [
+						{
+							"name": "ActiveMembersOnly"
+						},
+						{
+							"name": "GetActiveMemberCount",
+							"description": "Aggregating data by producing column 'member_count'"
+						},
+						{
+							"name": "TransactionHistory",
+							"description": "Checks for performing transactions"
+						},
+						{
+							"name": "Timestamp"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          MEMBER_ID as integer,",
+						"          MEMBER_PREFIX_ID as integer,",
+						"          MEMBER_FIRST_NAME as string,",
+						"          MEMBER_MIDDLE_NAME as string,",
+						"          MEMBER_LAST_NAME as string,",
+						"          MEMBER_SUFFIX as string,",
+						"          MEMBER_BIRTHDAY as timestamp,",
+						"          MEMBER_BIRTHDAY_YEAR as integer,",
+						"          MEMBER_BIRTHDAY_DAY as integer,",
+						"          MEMBER_BIRTHDAY_MONTH as integer,",
+						"          MEMBER_AGE as integer,",
+						"          MEMBER_ADD_DATE as timestamp,",
+						"          MEMBER_ADD_APP_DAY_ID as integer,",
+						"          MEMBER_GENDER as integer,",
+						"          MEMBER_PORTAL_PASSWORD as string,",
+						"          MEMBER_PASSWORD_HASH as string,",
+						"          MEMBER_PASSWORD_SALT as string,",
+						"          MEMBER_PASSWORD_CHANGE_DATE as timestamp,",
+						"          MEMBER_PORTAL_PIN as string,",
+						"          MEMBER_CONTACT_FLAGS as integer,",
+						"          MEMBER_EMAIL_OPT_LAST_CHANGE as timestamp,",
+						"          MEMBER_MAIL_OPT_LAST_CHANGE as timestamp,",
+						"          MEMBER_PHONE_OPT_LAST_CHANGE as timestamp,",
+						"          MEMBER_TEXT_OPT_LAST_CHANGE as timestamp,",
+						"          MEMBER_FLAGS as integer,",
+						"          MEMBER_EXPORT_FLAGS as integer,",
+						"          CORE_USER_ID as integer,",
+						"          MEMBER_PROC_STATS_FLAGS as integer,",
+						"          MEMBER_PREF_DELIVERY_NON_OFFERS as integer,",
+						"          MEMBER_PREF_DELIVERY_OFFERS as integer,",
+						"          MEMBER_PREF_LANGUAGE_ID as integer,",
+						"          HEAD_MEMBER_ID as integer,",
+						"          GUID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> MemberTbl",
+						"source(output(",
+						"          MEMBER_ID as integer,",
+						"          COMBINED_INTO_MEMBER_ID as integer,",
+						"          MEMBER_NAME as string,",
+						"          AUDIT_USER as string,",
+						"          MEMBER_ACCOUNT_ID as string,",
+						"          MEMBER_LAST_EMAIL as string,",
+						"          MEMBER_DELETE_TIMESTAMP as timestamp,",
+						"          AUDIT_NOTE as string,",
+						"          TOTAL_POINTS_EARNED as decimal(19,4),",
+						"          TOTAL_POINTS_DEDUCTED as decimal(19,4),",
+						"          TOTAL_POINTS_USED as decimal(19,4),",
+						"          TOTAL_POINTS_EXPIRED as decimal(19,4),",
+						"          MEMBER_DELETE_FLAGS as integer,",
+						"          MEMBER_DELETE_COMPLETE_TIMESTAMP as timestamp,",
+						"          GUID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> MemberDeleteTbl",
+						"source(output(",
+						"          APP_TRANSACTION_ID as integer,",
+						"          LOYALTY_PROGRAM_ID as integer,",
+						"          MEMBER_ID as integer,",
+						"          TRANSACTION_TYPE_ID as integer,",
+						"          LOCATION_ID as integer,",
+						"          EVENT_ID as integer,",
+						"          DEVICE_ID as integer,",
+						"          IMPORT_SOURCE_ID as integer,",
+						"          PARI_DEVICE_TYPE_ID as integer,",
+						"          PARI_TRACK_ID as integer,",
+						"          PARI_POOL_ID as integer,",
+						"          PARI_BET_COUNT as integer,",
+						"          PARI_RACE as integer,",
+						"          TRANSACTION_TIMESTAMP as timestamp,",
+						"          ACTIVITY_TIMESTAMP as timestamp,",
+						"          APP_DAY_ID as integer,",
+						"          BOOKING_APP_DAY_ID as integer,",
+						"          TRANSACTION_POINT_ID as integer,",
+						"          TRANSACTION_PROFIT_ID as integer,",
+						"          TRANSACTION_RULE_ID as integer,",
+						"          TRANSACTION_RETAIL_VALUE as decimal(19,4),",
+						"          TRANSACTION_PROFIT_VALUE as decimal(19,4),",
+						"          TRANSACTION_WON_VALUE as decimal(19,4),",
+						"          TRANSACTION_BASE_POINT_VALUE as decimal(19,4),",
+						"          TRANSACTION_POINT_VALUE as decimal(19,4),",
+						"          TRANSACTION_EXTERNAL_REF as string,",
+						"          TRANSACTION_FLAGS as integer,",
+						"          TRANSACTION_PROC_STATS_FLAGS as integer,",
+						"          MEMBER_ACCOUNT_ID_USED as string,",
+						"          APP_TRANSACTION_BASKET_ID as integer,",
+						"          APP_TRANSACTION_AUDIT_USER as string,",
+						"          TRANSFER_APP_TRANSACTION_ID as integer,",
+						"          GUID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> TransactionTbl",
+						"MemberTbl, MemberDeleteTbl exists(MemberTbl@MEMBER_ID == MemberDeleteTbl@MEMBER_ID,",
+						"     negate:true,",
+						"     broadcast: 'auto')~> ActiveMembersOnly",
+						"Timestamp aggregate(groupBy(TIMESTAMP),",
+						"     MEMBER_COUNT = countAllDistinct(MemberTbl@MEMBER_ID)) ~> GetActiveMemberCount",
+						"ActiveMembersOnly, TransactionTbl join(MemberTbl@MEMBER_ID == TransactionTbl@MEMBER_ID,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> TransactionHistory",
+						"TransactionHistory derive(TIMESTAMP = currentTimestamp()) ~> Timestamp",
+						"GetActiveMemberCount sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> ActiveMemberTbl"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_Total_Active_Products')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Counts the total number of active products",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "TransactionTbl",
+								"type": "DatasetReference"
+							},
+							"name": "AppTransactionTbl"
+						},
+						{
+							"dataset": {
+								"referenceName": "AppTransactionBasketProductTbl",
+								"type": "DatasetReference"
+							},
+							"name": "AppTransactionBasketProductTbl"
+						},
+						{
+							"dataset": {
+								"referenceName": "ProductTbl",
+								"type": "DatasetReference"
+							},
+							"name": "ProductTbl"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ActiveProductsTbl",
+								"type": "DatasetReference"
+							},
+							"name": "ActiveProductsTbl"
+						}
+					],
+					"transformations": [
+						{
+							"name": "AppTransAppJoinTransBasketProduct"
+						},
+						{
+							"name": "ProductJoinAppTransactionBasket"
+						},
+						{
+							"name": "ProductItemID"
+						},
+						{
+							"name": "ProductItemName"
+						},
+						{
+							"name": "JoinAll"
+						},
+						{
+							"name": "CountActiveProducts"
+						},
+						{
+							"name": "Timestamp"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          APP_TRANSACTION_ID as integer,",
+						"          LOYALTY_PROGRAM_ID as integer,",
+						"          MEMBER_ID as integer,",
+						"          TRANSACTION_TYPE_ID as integer,",
+						"          LOCATION_ID as integer,",
+						"          EVENT_ID as integer,",
+						"          DEVICE_ID as integer,",
+						"          IMPORT_SOURCE_ID as integer,",
+						"          PARI_DEVICE_TYPE_ID as integer,",
+						"          PARI_TRACK_ID as integer,",
+						"          PARI_POOL_ID as integer,",
+						"          PARI_BET_COUNT as integer,",
+						"          PARI_RACE as integer,",
+						"          TRANSACTION_TIMESTAMP as timestamp,",
+						"          ACTIVITY_TIMESTAMP as timestamp,",
+						"          APP_DAY_ID as integer,",
+						"          BOOKING_APP_DAY_ID as integer,",
+						"          TRANSACTION_POINT_ID as integer,",
+						"          TRANSACTION_PROFIT_ID as integer,",
+						"          TRANSACTION_RULE_ID as integer,",
+						"          TRANSACTION_RETAIL_VALUE as decimal(19,4),",
+						"          TRANSACTION_PROFIT_VALUE as decimal(19,4),",
+						"          TRANSACTION_WON_VALUE as decimal(19,4),",
+						"          TRANSACTION_BASE_POINT_VALUE as decimal(19,4),",
+						"          TRANSACTION_POINT_VALUE as decimal(19,4),",
+						"          TRANSACTION_EXTERNAL_REF as string,",
+						"          TRANSACTION_FLAGS as integer,",
+						"          TRANSACTION_PROC_STATS_FLAGS as integer,",
+						"          MEMBER_ACCOUNT_ID_USED as string,",
+						"          APP_TRANSACTION_BASKET_ID as integer,",
+						"          APP_TRANSACTION_AUDIT_USER as string,",
+						"          TRANSFER_APP_TRANSACTION_ID as integer,",
+						"          GUID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> AppTransactionTbl",
+						"source(output(",
+						"          APP_TRANSACTION_BASKET_ID as integer,",
+						"          APP_TRANSACTION_BASKET_PRODUCT_ID as integer,",
+						"          PRODUCT_ITEM_ID as integer,",
+						"          FINAL_UNIT_PRICE as decimal(19,4),",
+						"          BASE_POINTS as decimal(19,4),",
+						"          BONUS_POINTS as decimal(19,4),",
+						"          PROFIT_VALUE as decimal(19,4),",
+						"          APP_TRANSACTION_BASKET_PRODUCT_FLAGS as integer,",
+						"          GUID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> AppTransactionBasketProductTbl",
+						"source(output(",
+						"          PRODUCT_ITEM_ID as integer,",
+						"          PRODUCT_ITEM_NAME as string,",
+						"          PRODUCT_ITEM_FLAGS as integer,",
+						"          PRODUCT_ITEM_EXTERNAL_REF as string,",
+						"          GUID as string,",
+						"          PRODUCT_ITEM_DELETE_REF_FLAGS as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> ProductTbl",
+						"AppTransactionTbl, AppTransactionBasketProductTbl join(AppTransactionTbl@APP_TRANSACTION_BASKET_ID == AppTransactionBasketProductTbl@APP_TRANSACTION_BASKET_ID,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> AppTransAppJoinTransBasketProduct",
+						"AppTransactionBasketProductTbl, ProductTbl join(AppTransactionBasketProductTbl@PRODUCT_ITEM_ID == ProductTbl@PRODUCT_ITEM_ID,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> ProductJoinAppTransactionBasket",
+						"AppTransAppJoinTransBasketProduct select(mapColumn(",
+						"          PRODUCT_ITEM_ID,",
+						"          APP_TRANSACTION_ID,",
+						"          APP_TRANSACTION_BASKET_ID = AppTransactionTbl@APP_TRANSACTION_BASKET_ID",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> ProductItemID",
+						"ProductJoinAppTransactionBasket select(mapColumn(",
+						"          APP_TRANSACTION_BASKET_ID,",
+						"          PRODUCT_ITEM_NAME",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> ProductItemName",
+						"ProductItemID, ProductItemName join(ProductItemID@APP_TRANSACTION_BASKET_ID == ProductItemName@APP_TRANSACTION_BASKET_ID,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> JoinAll",
+						"Timestamp aggregate(groupBy(TIMESTAMP,",
+						"          PRODUCT_ITEM_ID,",
+						"          PRODUCT_ITEM_NAME),",
+						"     ACTIVE_PRODUCT_COUNT = countAllDistinct(APP_TRANSACTION_ID)) ~> CountActiveProducts",
+						"JoinAll derive(TIMESTAMP = currentTimestamp()) ~> Timestamp",
+						"CountActiveProducts sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> ActiveProductsTbl"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_Total_Members')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Counts the total number of members",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "MemberTbl",
+								"type": "DatasetReference"
+							},
+							"name": "MemberTbl"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TotalMemberTbl",
+								"type": "DatasetReference"
+							},
+							"name": "TotalMemberTbl"
+						}
+					],
+					"transformations": [
+						{
+							"name": "Timestamp"
+						},
+						{
+							"name": "TotalMemberCount"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          MEMBER_ID as integer,",
+						"          MEMBER_PREFIX_ID as integer,",
+						"          MEMBER_FIRST_NAME as string,",
+						"          MEMBER_MIDDLE_NAME as string,",
+						"          MEMBER_LAST_NAME as string,",
+						"          MEMBER_SUFFIX as string,",
+						"          MEMBER_BIRTHDAY as timestamp,",
+						"          MEMBER_BIRTHDAY_YEAR as integer,",
+						"          MEMBER_BIRTHDAY_DAY as integer,",
+						"          MEMBER_BIRTHDAY_MONTH as integer,",
+						"          MEMBER_AGE as integer,",
+						"          MEMBER_ADD_DATE as timestamp,",
+						"          MEMBER_ADD_APP_DAY_ID as integer,",
+						"          MEMBER_GENDER as integer,",
+						"          MEMBER_PORTAL_PASSWORD as string,",
+						"          MEMBER_PASSWORD_HASH as string,",
+						"          MEMBER_PASSWORD_SALT as string,",
+						"          MEMBER_PASSWORD_CHANGE_DATE as timestamp,",
+						"          MEMBER_PORTAL_PIN as string,",
+						"          MEMBER_CONTACT_FLAGS as integer,",
+						"          MEMBER_EMAIL_OPT_LAST_CHANGE as timestamp,",
+						"          MEMBER_MAIL_OPT_LAST_CHANGE as timestamp,",
+						"          MEMBER_PHONE_OPT_LAST_CHANGE as timestamp,",
+						"          MEMBER_TEXT_OPT_LAST_CHANGE as timestamp,",
+						"          MEMBER_FLAGS as integer,",
+						"          MEMBER_EXPORT_FLAGS as integer,",
+						"          CORE_USER_ID as integer,",
+						"          MEMBER_PROC_STATS_FLAGS as integer,",
+						"          MEMBER_PREF_DELIVERY_NON_OFFERS as integer,",
+						"          MEMBER_PREF_DELIVERY_OFFERS as integer,",
+						"          MEMBER_PREF_LANGUAGE_ID as integer,",
+						"          HEAD_MEMBER_ID as integer,",
+						"          GUID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> MemberTbl",
+						"MemberTbl derive(TIMESTAMP = currentTimestamp()) ~> Timestamp",
+						"Timestamp aggregate(groupBy(TIMESTAMP),",
+						"     TOTAL_MEMBER_COUNT = countAllDistinct(MEMBER_ID)) ~> TotalMemberCount",
+						"TotalMemberCount sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> TotalMemberTbl"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_Total_Products')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ProductTbl",
+								"type": "DatasetReference"
+							},
+							"name": "ProductTbl"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TotalProductTbl",
+								"type": "DatasetReference"
+							},
+							"name": "TotalProductTbl"
+						}
+					],
+					"transformations": [
+						{
+							"name": "CountTotalProducts",
+							"description": "Counting the total number of Products"
+						},
+						{
+							"name": "Timestamp",
+							"description": "Adding the timestamp"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          PRODUCT_ITEM_ID as integer,",
+						"          PRODUCT_ITEM_NAME as string,",
+						"          PRODUCT_ITEM_FLAGS as integer,",
+						"          PRODUCT_ITEM_EXTERNAL_REF as string,",
+						"          GUID as string,",
+						"          PRODUCT_ITEM_DELETE_REF_FLAGS as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> ProductTbl",
+						"Timestamp aggregate(groupBy(TIMESTAMP),",
+						"     TOTAL_PRODUCT_COUNT = countAllDistinct(PRODUCT_ITEM_ID)) ~> CountTotalProducts",
+						"ProductTbl derive(TIMESTAMP = currentTimestamp()) ~> Timestamp",
+						"CountTotalProducts sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> TotalProductTbl"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_Total_Promotions')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Counts all the Promotions",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "TransactionTbl",
+								"type": "DatasetReference"
+							},
+							"name": "TransactionTbl"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TotalPromotionTbl",
+								"type": "DatasetReference"
+							},
+							"name": "TotalPromotions"
+						}
+					],
+					"transformations": [
+						{
+							"name": "TIMESTAMP"
+						},
+						{
+							"name": "TotalPromotionCount"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          APP_TRANSACTION_ID as integer,",
+						"          LOYALTY_PROGRAM_ID as integer,",
+						"          MEMBER_ID as integer,",
+						"          TRANSACTION_TYPE_ID as integer,",
+						"          LOCATION_ID as integer,",
+						"          EVENT_ID as integer,",
+						"          DEVICE_ID as integer,",
+						"          IMPORT_SOURCE_ID as integer,",
+						"          PARI_DEVICE_TYPE_ID as integer,",
+						"          PARI_TRACK_ID as integer,",
+						"          PARI_POOL_ID as integer,",
+						"          PARI_BET_COUNT as integer,",
+						"          PARI_RACE as integer,",
+						"          TRANSACTION_TIMESTAMP as timestamp,",
+						"          ACTIVITY_TIMESTAMP as timestamp,",
+						"          APP_DAY_ID as integer,",
+						"          BOOKING_APP_DAY_ID as integer,",
+						"          TRANSACTION_POINT_ID as integer,",
+						"          TRANSACTION_PROFIT_ID as integer,",
+						"          TRANSACTION_RULE_ID as integer,",
+						"          TRANSACTION_RETAIL_VALUE as decimal(19,4),",
+						"          TRANSACTION_PROFIT_VALUE as decimal(19,4),",
+						"          TRANSACTION_WON_VALUE as decimal(19,4),",
+						"          TRANSACTION_BASE_POINT_VALUE as decimal(19,4),",
+						"          TRANSACTION_POINT_VALUE as decimal(19,4),",
+						"          TRANSACTION_EXTERNAL_REF as string,",
+						"          TRANSACTION_FLAGS as integer,",
+						"          TRANSACTION_PROC_STATS_FLAGS as integer,",
+						"          MEMBER_ACCOUNT_ID_USED as string,",
+						"          APP_TRANSACTION_BASKET_ID as integer,",
+						"          APP_TRANSACTION_AUDIT_USER as string,",
+						"          TRANSFER_APP_TRANSACTION_ID as integer,",
+						"          GUID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT * FROM APP_TRANSACTION WHERE TRANSACTION_POINT_VALUE > TRANSACTION_BASE_POINT_VALUE',",
+						"     format: 'query') ~> TransactionTbl",
+						"TransactionTbl derive(TIMESTAMP = currentTimestamp()) ~> TIMESTAMP",
+						"TIMESTAMP aggregate(groupBy(TIMESTAMP),",
+						"     PROMOTION_COUNT = countAllDistinct(APP_TRANSACTION_ID)) ~> TotalPromotionCount",
+						"TotalPromotionCount sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> TotalPromotions"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_Total_Reward_Redemptions')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Weekly Reward Redemptions",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "MemberRewardTbl",
+								"type": "DatasetReference"
+							},
+							"name": "MemberRewardTbl",
+							"description": "MEMBER_REWARD Table"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TotalRedemptionsTbl",
+								"type": "DatasetReference"
+							},
+							"name": "TotalRedemptionsTbl",
+							"description": "Total Redemptions"
+						}
+					],
+					"transformations": [
+						{
+							"name": "Timestamp",
+							"description": "Adding Timestamp"
+						},
+						{
+							"name": "TotalRedeemed"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          MEMBER_REWARD_ID as integer,",
+						"          LOYALTY_PROGRAM_ID as integer,",
+						"          MEMBER_ID as integer,",
+						"          REWARD_TYPE_ID as integer,",
+						"          DEVICE_ID as integer,",
+						"          LOCATION_ID as integer,",
+						"          EVENT_ID as integer,",
+						"          MEMBER_REWARD_FLAGS as integer,",
+						"          REWARD_BASE_POINT_VALUE as decimal(19,4),",
+						"          REWARD_POINT_VALUE as decimal(19,4),",
+						"          REWARD_RETAIL_VALUE as decimal(19,4),",
+						"          REWARD_USED_RETAIL_VALUE as decimal(19,4),",
+						"          REWARD_COST_VALUE as decimal(19,4),",
+						"          ISSUE_TIMESTAMP as timestamp,",
+						"          ISSUE_AUDIT_USER as string,",
+						"          ORIGINAL_MEMBER_ID as integer,",
+						"          CANCEL_TIMESTAMP as timestamp,",
+						"          CANCEL_AUDIT_USER as string,",
+						"          REDEEM_TIMESTAMP as timestamp,",
+						"          REDEEM_APP_DAY_ID as integer,",
+						"          REDEEM_AUDIT_USER as string,",
+						"          REDEEM_LOCATION_ID as integer,",
+						"          EXPIRE_TIMESTAMP as timestamp,",
+						"          EXPIRE_APP_DAY_ID as integer,",
+						"          APP_DAY_ID as integer,",
+						"          VARIABLE_REWARD_POINT_ID as integer,",
+						"          VARIABLE_REWARD_COST_ID as integer,",
+						"          REWARD_PROC_STATS_FLAGS as integer,",
+						"          CASHIER_SESSION_ID as integer,",
+						"          CASHIER_SESSION_FLAGS as integer,",
+						"          MEMBER_REWARD_BARCODE as string,",
+						"          MEMBER_REWARD_BARCODE_PIN as string,",
+						"          DOTD_PROMO_ID as integer,",
+						"          DOTD_PROMO_APP_DAY_ID as integer,",
+						"          TRANSFER_TARGET_ID as integer,",
+						"          DELIVERED_COUNT as integer,",
+						"          SALT as string,",
+						"          ORDER_NUMBER as string,",
+						"          GUID as string,",
+						"          VARIABLE_REWARD_FROM_POINTS as decimal(19,4),",
+						"          VARIABLE_REWARD_PER_VALUE as decimal(19,4)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT *  FROM MEMBER_REWARD WHERE REDEEM_TIMESTAMP IS NOT NULL',",
+						"     format: 'query') ~> MemberRewardTbl",
+						"MemberRewardTbl derive(TIMESTAMP = currentTimestamp()) ~> Timestamp",
+						"Timestamp aggregate(groupBy(TIMESTAMP),",
+						"     TOTAL_REDEEMED_COUNT = count(REWARD_TYPE_ID)) ~> TotalRedeemed",
+						"TotalRedeemed sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> TotalRedemptionsTbl"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_Total_Transactions')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Contains total number transactions",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "TransactionTbl",
+								"type": "DatasetReference"
+							},
+							"name": "TransactionTbl",
+							"description": "Transaction table"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TotalTransactionTbl",
+								"type": "DatasetReference"
+							},
+							"name": "TotalTransactionTbl"
+						}
+					],
+					"transformations": [
+						{
+							"name": "Timestamp",
+							"description": "Adding the Timestamp Column"
+						},
+						{
+							"name": "CountAllTransactions",
+							"description": "Counts the total number of transactions"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          APP_TRANSACTION_ID as integer,",
+						"          LOYALTY_PROGRAM_ID as integer,",
+						"          MEMBER_ID as integer,",
+						"          TRANSACTION_TYPE_ID as integer,",
+						"          LOCATION_ID as integer,",
+						"          EVENT_ID as integer,",
+						"          DEVICE_ID as integer,",
+						"          IMPORT_SOURCE_ID as integer,",
+						"          PARI_DEVICE_TYPE_ID as integer,",
+						"          PARI_TRACK_ID as integer,",
+						"          PARI_POOL_ID as integer,",
+						"          PARI_BET_COUNT as integer,",
+						"          PARI_RACE as integer,",
+						"          TRANSACTION_TIMESTAMP as timestamp,",
+						"          ACTIVITY_TIMESTAMP as timestamp,",
+						"          APP_DAY_ID as integer,",
+						"          BOOKING_APP_DAY_ID as integer,",
+						"          TRANSACTION_POINT_ID as integer,",
+						"          TRANSACTION_PROFIT_ID as integer,",
+						"          TRANSACTION_RULE_ID as integer,",
+						"          TRANSACTION_RETAIL_VALUE as decimal(19,4),",
+						"          TRANSACTION_PROFIT_VALUE as decimal(19,4),",
+						"          TRANSACTION_WON_VALUE as decimal(19,4),",
+						"          TRANSACTION_BASE_POINT_VALUE as decimal(19,4),",
+						"          TRANSACTION_POINT_VALUE as decimal(19,4),",
+						"          TRANSACTION_EXTERNAL_REF as string,",
+						"          TRANSACTION_FLAGS as integer,",
+						"          TRANSACTION_PROC_STATS_FLAGS as integer,",
+						"          MEMBER_ACCOUNT_ID_USED as string,",
+						"          APP_TRANSACTION_BASKET_ID as integer,",
+						"          APP_TRANSACTION_AUDIT_USER as string,",
+						"          TRANSFER_APP_TRANSACTION_ID as integer,",
+						"          GUID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> TransactionTbl",
+						"TransactionTbl derive(TIMESTAMP = currentTimestamp()) ~> Timestamp",
+						"Timestamp aggregate(groupBy(TIMESTAMP),",
+						"     TOTAL_TRANSACTION_COUNT = countAllDistinct(APP_TRANSACTION_ID)) ~> CountAllTransactions",
+						"CountAllTransactions sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> TotalTransactionTbl"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_Weekly_Active_Members')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "MemberTbl",
+								"type": "DatasetReference"
+							},
+							"name": "MemberTbl"
+						},
+						{
+							"dataset": {
+								"referenceName": "MemberDeleteTbl",
+								"type": "DatasetReference"
+							},
+							"name": "MemberDeleteTbl"
+						},
+						{
+							"dataset": {
+								"referenceName": "TransactionTbl",
+								"type": "DatasetReference"
+							},
+							"name": "TransactionTbl"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "WeeklyActiveMemberTbl",
+								"type": "DatasetReference"
+							},
+							"name": "WeeklyActiveMemberTbl"
+						}
+					],
+					"transformations": [
+						{
+							"name": "ActiveMembersOnly"
+						},
+						{
+							"name": "GetActiveMemberCount",
+							"description": "Aggregating data by producing column 'member_count'"
+						},
+						{
+							"name": "TransactionHistory",
+							"description": "Checks for performing transactions"
+						},
+						{
+							"name": "Timestamp"
+						},
+						{
+							"name": "FilterWeeklyTransactions"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          MEMBER_ID as integer,",
+						"          MEMBER_PREFIX_ID as integer,",
+						"          MEMBER_FIRST_NAME as string,",
+						"          MEMBER_MIDDLE_NAME as string,",
+						"          MEMBER_LAST_NAME as string,",
+						"          MEMBER_SUFFIX as string,",
+						"          MEMBER_BIRTHDAY as timestamp,",
+						"          MEMBER_BIRTHDAY_YEAR as integer,",
+						"          MEMBER_BIRTHDAY_DAY as integer,",
+						"          MEMBER_BIRTHDAY_MONTH as integer,",
+						"          MEMBER_AGE as integer,",
+						"          MEMBER_ADD_DATE as timestamp,",
+						"          MEMBER_ADD_APP_DAY_ID as integer,",
+						"          MEMBER_GENDER as integer,",
+						"          MEMBER_PORTAL_PASSWORD as string,",
+						"          MEMBER_PASSWORD_HASH as string,",
+						"          MEMBER_PASSWORD_SALT as string,",
+						"          MEMBER_PASSWORD_CHANGE_DATE as timestamp,",
+						"          MEMBER_PORTAL_PIN as string,",
+						"          MEMBER_CONTACT_FLAGS as integer,",
+						"          MEMBER_EMAIL_OPT_LAST_CHANGE as timestamp,",
+						"          MEMBER_MAIL_OPT_LAST_CHANGE as timestamp,",
+						"          MEMBER_PHONE_OPT_LAST_CHANGE as timestamp,",
+						"          MEMBER_TEXT_OPT_LAST_CHANGE as timestamp,",
+						"          MEMBER_FLAGS as integer,",
+						"          MEMBER_EXPORT_FLAGS as integer,",
+						"          CORE_USER_ID as integer,",
+						"          MEMBER_PROC_STATS_FLAGS as integer,",
+						"          MEMBER_PREF_DELIVERY_NON_OFFERS as integer,",
+						"          MEMBER_PREF_DELIVERY_OFFERS as integer,",
+						"          MEMBER_PREF_LANGUAGE_ID as integer,",
+						"          HEAD_MEMBER_ID as integer,",
+						"          GUID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> MemberTbl",
+						"source(output(",
+						"          MEMBER_ID as integer,",
+						"          COMBINED_INTO_MEMBER_ID as integer,",
+						"          MEMBER_NAME as string,",
+						"          AUDIT_USER as string,",
+						"          MEMBER_ACCOUNT_ID as string,",
+						"          MEMBER_LAST_EMAIL as string,",
+						"          MEMBER_DELETE_TIMESTAMP as timestamp,",
+						"          AUDIT_NOTE as string,",
+						"          TOTAL_POINTS_EARNED as decimal(19,4),",
+						"          TOTAL_POINTS_DEDUCTED as decimal(19,4),",
+						"          TOTAL_POINTS_USED as decimal(19,4),",
+						"          TOTAL_POINTS_EXPIRED as decimal(19,4),",
+						"          MEMBER_DELETE_FLAGS as integer,",
+						"          MEMBER_DELETE_COMPLETE_TIMESTAMP as timestamp,",
+						"          GUID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> MemberDeleteTbl",
+						"source(output(",
+						"          APP_TRANSACTION_ID as integer,",
+						"          LOYALTY_PROGRAM_ID as integer,",
+						"          MEMBER_ID as integer,",
+						"          TRANSACTION_TYPE_ID as integer,",
+						"          LOCATION_ID as integer,",
+						"          EVENT_ID as integer,",
+						"          DEVICE_ID as integer,",
+						"          IMPORT_SOURCE_ID as integer,",
+						"          PARI_DEVICE_TYPE_ID as integer,",
+						"          PARI_TRACK_ID as integer,",
+						"          PARI_POOL_ID as integer,",
+						"          PARI_BET_COUNT as integer,",
+						"          PARI_RACE as integer,",
+						"          TRANSACTION_TIMESTAMP as timestamp,",
+						"          ACTIVITY_TIMESTAMP as timestamp,",
+						"          APP_DAY_ID as integer,",
+						"          BOOKING_APP_DAY_ID as integer,",
+						"          TRANSACTION_POINT_ID as integer,",
+						"          TRANSACTION_PROFIT_ID as integer,",
+						"          TRANSACTION_RULE_ID as integer,",
+						"          TRANSACTION_RETAIL_VALUE as decimal(19,4),",
+						"          TRANSACTION_PROFIT_VALUE as decimal(19,4),",
+						"          TRANSACTION_WON_VALUE as decimal(19,4),",
+						"          TRANSACTION_BASE_POINT_VALUE as decimal(19,4),",
+						"          TRANSACTION_POINT_VALUE as decimal(19,4),",
+						"          TRANSACTION_EXTERNAL_REF as string,",
+						"          TRANSACTION_FLAGS as integer,",
+						"          TRANSACTION_PROC_STATS_FLAGS as integer,",
+						"          MEMBER_ACCOUNT_ID_USED as string,",
+						"          APP_TRANSACTION_BASKET_ID as integer,",
+						"          APP_TRANSACTION_AUDIT_USER as string,",
+						"          TRANSFER_APP_TRANSACTION_ID as integer,",
+						"          GUID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> TransactionTbl",
+						"MemberTbl, MemberDeleteTbl exists(MemberTbl@MEMBER_ID == MemberDeleteTbl@MEMBER_ID,",
+						"     negate:true,",
+						"     broadcast: 'auto')~> ActiveMembersOnly",
+						"Timestamp aggregate(groupBy(TIMESTAMP),",
+						"     MEMBER_COUNT = countAllDistinct(MemberTbl@MEMBER_ID)) ~> GetActiveMemberCount",
+						"ActiveMembersOnly, TransactionTbl join(MemberTbl@MEMBER_ID == TransactionTbl@MEMBER_ID,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> TransactionHistory",
+						"FilterWeeklyTransactions derive(TIMESTAMP = currentTimestamp()) ~> Timestamp",
+						"TransactionHistory filter(TRANSACTION_TIMESTAMP >= subDays(currentTimestamp(), 7)) ~> FilterWeeklyTransactions",
+						"GetActiveMemberCount sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> WeeklyActiveMemberTbl"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_Weekly_Active_Products')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Counts the weekly number of active products",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "TransactionTbl",
+								"type": "DatasetReference"
+							},
+							"name": "AppTransactionTbl"
+						},
+						{
+							"dataset": {
+								"referenceName": "AppTransactionBasketProductTbl",
+								"type": "DatasetReference"
+							},
+							"name": "AppTransactionBasketProductTbl"
+						},
+						{
+							"dataset": {
+								"referenceName": "ProductTbl",
+								"type": "DatasetReference"
+							},
+							"name": "ProductTbl"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "WeeklyActiveProductsTbl",
+								"type": "DatasetReference"
+							},
+							"name": "WeeklyActiveProductsTbl"
+						}
+					],
+					"transformations": [
+						{
+							"name": "AppTransAppJoinTransBasketProduct"
+						},
+						{
+							"name": "ProductJoinAppTransactionBasket"
+						},
+						{
+							"name": "ProductItemID"
+						},
+						{
+							"name": "ProductItemName"
+						},
+						{
+							"name": "JoinAll"
+						},
+						{
+							"name": "CountActiveProducts"
+						},
+						{
+							"name": "Timestamp"
+						},
+						{
+							"name": "FilterWeekly"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          APP_TRANSACTION_ID as integer,",
+						"          LOYALTY_PROGRAM_ID as integer,",
+						"          MEMBER_ID as integer,",
+						"          TRANSACTION_TYPE_ID as integer,",
+						"          LOCATION_ID as integer,",
+						"          EVENT_ID as integer,",
+						"          DEVICE_ID as integer,",
+						"          IMPORT_SOURCE_ID as integer,",
+						"          PARI_DEVICE_TYPE_ID as integer,",
+						"          PARI_TRACK_ID as integer,",
+						"          PARI_POOL_ID as integer,",
+						"          PARI_BET_COUNT as integer,",
+						"          PARI_RACE as integer,",
+						"          TRANSACTION_TIMESTAMP as timestamp,",
+						"          ACTIVITY_TIMESTAMP as timestamp,",
+						"          APP_DAY_ID as integer,",
+						"          BOOKING_APP_DAY_ID as integer,",
+						"          TRANSACTION_POINT_ID as integer,",
+						"          TRANSACTION_PROFIT_ID as integer,",
+						"          TRANSACTION_RULE_ID as integer,",
+						"          TRANSACTION_RETAIL_VALUE as decimal(19,4),",
+						"          TRANSACTION_PROFIT_VALUE as decimal(19,4),",
+						"          TRANSACTION_WON_VALUE as decimal(19,4),",
+						"          TRANSACTION_BASE_POINT_VALUE as decimal(19,4),",
+						"          TRANSACTION_POINT_VALUE as decimal(19,4),",
+						"          TRANSACTION_EXTERNAL_REF as string,",
+						"          TRANSACTION_FLAGS as integer,",
+						"          TRANSACTION_PROC_STATS_FLAGS as integer,",
+						"          MEMBER_ACCOUNT_ID_USED as string,",
+						"          APP_TRANSACTION_BASKET_ID as integer,",
+						"          APP_TRANSACTION_AUDIT_USER as string,",
+						"          TRANSFER_APP_TRANSACTION_ID as integer,",
+						"          GUID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> AppTransactionTbl",
+						"source(output(",
+						"          APP_TRANSACTION_BASKET_ID as integer,",
+						"          APP_TRANSACTION_BASKET_PRODUCT_ID as integer,",
+						"          PRODUCT_ITEM_ID as integer,",
+						"          FINAL_UNIT_PRICE as decimal(19,4),",
+						"          BASE_POINTS as decimal(19,4),",
+						"          BONUS_POINTS as decimal(19,4),",
+						"          PROFIT_VALUE as decimal(19,4),",
+						"          APP_TRANSACTION_BASKET_PRODUCT_FLAGS as integer,",
+						"          GUID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> AppTransactionBasketProductTbl",
+						"source(output(",
+						"          PRODUCT_ITEM_ID as integer,",
+						"          PRODUCT_ITEM_NAME as string,",
+						"          PRODUCT_ITEM_FLAGS as integer,",
+						"          PRODUCT_ITEM_EXTERNAL_REF as string,",
+						"          GUID as string,",
+						"          PRODUCT_ITEM_DELETE_REF_FLAGS as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> ProductTbl",
+						"AppTransactionTbl, AppTransactionBasketProductTbl join(AppTransactionTbl@APP_TRANSACTION_BASKET_ID == AppTransactionBasketProductTbl@APP_TRANSACTION_BASKET_ID,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> AppTransAppJoinTransBasketProduct",
+						"AppTransactionBasketProductTbl, ProductTbl join(AppTransactionBasketProductTbl@PRODUCT_ITEM_ID == ProductTbl@PRODUCT_ITEM_ID,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> ProductJoinAppTransactionBasket",
+						"AppTransAppJoinTransBasketProduct select(mapColumn(",
+						"          PRODUCT_ITEM_ID,",
+						"          APP_TRANSACTION_ID,",
+						"          APP_TRANSACTION_BASKET_ID = AppTransactionTbl@APP_TRANSACTION_BASKET_ID,",
+						"          TRANSACTION_TIMESTAMP",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> ProductItemID",
+						"ProductJoinAppTransactionBasket select(mapColumn(",
+						"          APP_TRANSACTION_BASKET_ID,",
+						"          PRODUCT_ITEM_NAME",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> ProductItemName",
+						"ProductItemID, ProductItemName join(ProductItemID@APP_TRANSACTION_BASKET_ID == ProductItemName@APP_TRANSACTION_BASKET_ID,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> JoinAll",
+						"Timestamp aggregate(groupBy(TIMESTAMP,",
+						"          PRODUCT_ITEM_ID,",
+						"          PRODUCT_ITEM_NAME),",
+						"     ACTIVE_PRODUCT_COUNT = countAllDistinct(APP_TRANSACTION_ID)) ~> CountActiveProducts",
+						"FilterWeekly derive(TIMESTAMP = currentTimestamp()) ~> Timestamp",
+						"JoinAll filter(TRANSACTION_TIMESTAMP >= subDays(currentTimestamp(), 7)) ~> FilterWeekly",
+						"CountActiveProducts sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> WeeklyActiveProductsTbl"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_Weekly_Promotions')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Counts all the Promotions",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "TransactionTbl",
+								"type": "DatasetReference"
+							},
+							"name": "TransactionTbl"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "WeeklyPromotionTbl",
+								"type": "DatasetReference"
+							},
+							"name": "TotalPromotions"
+						}
+					],
+					"transformations": [
+						{
+							"name": "TIMESTAMP"
+						},
+						{
+							"name": "TotalWeeklyPromotionCount"
+						},
+						{
+							"name": "FilterWeeklyPromotions"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          APP_TRANSACTION_ID as integer,",
+						"          LOYALTY_PROGRAM_ID as integer,",
+						"          MEMBER_ID as integer,",
+						"          TRANSACTION_TYPE_ID as integer,",
+						"          LOCATION_ID as integer,",
+						"          EVENT_ID as integer,",
+						"          DEVICE_ID as integer,",
+						"          IMPORT_SOURCE_ID as integer,",
+						"          PARI_DEVICE_TYPE_ID as integer,",
+						"          PARI_TRACK_ID as integer,",
+						"          PARI_POOL_ID as integer,",
+						"          PARI_BET_COUNT as integer,",
+						"          PARI_RACE as integer,",
+						"          TRANSACTION_TIMESTAMP as timestamp,",
+						"          ACTIVITY_TIMESTAMP as timestamp,",
+						"          APP_DAY_ID as integer,",
+						"          BOOKING_APP_DAY_ID as integer,",
+						"          TRANSACTION_POINT_ID as integer,",
+						"          TRANSACTION_PROFIT_ID as integer,",
+						"          TRANSACTION_RULE_ID as integer,",
+						"          TRANSACTION_RETAIL_VALUE as decimal(19,4),",
+						"          TRANSACTION_PROFIT_VALUE as decimal(19,4),",
+						"          TRANSACTION_WON_VALUE as decimal(19,4),",
+						"          TRANSACTION_BASE_POINT_VALUE as decimal(19,4),",
+						"          TRANSACTION_POINT_VALUE as decimal(19,4),",
+						"          TRANSACTION_EXTERNAL_REF as string,",
+						"          TRANSACTION_FLAGS as integer,",
+						"          TRANSACTION_PROC_STATS_FLAGS as integer,",
+						"          MEMBER_ACCOUNT_ID_USED as string,",
+						"          APP_TRANSACTION_BASKET_ID as integer,",
+						"          APP_TRANSACTION_AUDIT_USER as string,",
+						"          TRANSFER_APP_TRANSACTION_ID as integer,",
+						"          GUID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT * FROM APP_TRANSACTION WHERE TRANSACTION_POINT_VALUE > TRANSACTION_BASE_POINT_VALUE',",
+						"     format: 'query') ~> TransactionTbl",
+						"FilterWeeklyPromotions derive(TIMESTAMP = currentTimestamp()) ~> TIMESTAMP",
+						"TIMESTAMP aggregate(groupBy(TIMESTAMP),",
+						"     PROMOTION_COUNT = countAllDistinct(APP_TRANSACTION_ID)) ~> TotalWeeklyPromotionCount",
+						"TransactionTbl filter(TRANSACTION_TIMESTAMP >= subDays(currentTimestamp(), 7)) ~> FilterWeeklyPromotions",
+						"TotalWeeklyPromotionCount sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> TotalPromotions"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/WeeklyPromotionTbl')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_Weekly_Reward_Redemptions')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Weekly Reward Redemptions",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "MemberRewardTbl",
+								"type": "DatasetReference"
+							},
+							"name": "MemberRewardTbl",
+							"description": "MEMBER_REWARD Table"
+						},
+						{
+							"dataset": {
+								"referenceName": "RewardTypeTbl",
+								"type": "DatasetReference"
+							},
+							"name": "RewardTypeTbl",
+							"description": "REWARD_TYPE Table"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "WeeklyRedemptionsTbl",
+								"type": "DatasetReference"
+							},
+							"name": "Redemptions",
+							"description": "Weekly Redemptions"
+						}
+					],
+					"transformations": [
+						{
+							"name": "JoinMRandRT",
+							"description": "Join Member Reward & Reward Type"
+						},
+						{
+							"name": "FilterWeeklyRedemptions",
+							"description": "Filter Weekly"
+						},
+						{
+							"name": "Timestamp",
+							"description": "Adding Timestamp"
+						},
+						{
+							"name": "WeeklyRedeemed"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          MEMBER_REWARD_ID as integer,",
+						"          LOYALTY_PROGRAM_ID as integer,",
+						"          MEMBER_ID as integer,",
+						"          REWARD_TYPE_ID as integer,",
+						"          DEVICE_ID as integer,",
+						"          LOCATION_ID as integer,",
+						"          EVENT_ID as integer,",
+						"          MEMBER_REWARD_FLAGS as integer,",
+						"          REWARD_BASE_POINT_VALUE as decimal(19,4),",
+						"          REWARD_POINT_VALUE as decimal(19,4),",
+						"          REWARD_RETAIL_VALUE as decimal(19,4),",
+						"          REWARD_USED_RETAIL_VALUE as decimal(19,4),",
+						"          REWARD_COST_VALUE as decimal(19,4),",
+						"          ISSUE_TIMESTAMP as timestamp,",
+						"          ISSUE_AUDIT_USER as string,",
+						"          ORIGINAL_MEMBER_ID as integer,",
+						"          CANCEL_TIMESTAMP as timestamp,",
+						"          CANCEL_AUDIT_USER as string,",
+						"          REDEEM_TIMESTAMP as timestamp,",
+						"          REDEEM_APP_DAY_ID as integer,",
+						"          REDEEM_AUDIT_USER as string,",
+						"          REDEEM_LOCATION_ID as integer,",
+						"          EXPIRE_TIMESTAMP as timestamp,",
+						"          EXPIRE_APP_DAY_ID as integer,",
+						"          APP_DAY_ID as integer,",
+						"          VARIABLE_REWARD_POINT_ID as integer,",
+						"          VARIABLE_REWARD_COST_ID as integer,",
+						"          REWARD_PROC_STATS_FLAGS as integer,",
+						"          CASHIER_SESSION_ID as integer,",
+						"          CASHIER_SESSION_FLAGS as integer,",
+						"          MEMBER_REWARD_BARCODE as string,",
+						"          MEMBER_REWARD_BARCODE_PIN as string,",
+						"          DOTD_PROMO_ID as integer,",
+						"          DOTD_PROMO_APP_DAY_ID as integer,",
+						"          TRANSFER_TARGET_ID as integer,",
+						"          DELIVERED_COUNT as integer,",
+						"          SALT as string,",
+						"          ORDER_NUMBER as string,",
+						"          GUID as string,",
+						"          VARIABLE_REWARD_FROM_POINTS as decimal(19,4),",
+						"          VARIABLE_REWARD_PER_VALUE as decimal(19,4)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> MemberRewardTbl",
+						"source(output(",
+						"          REWARD_TYPE_ID as integer,",
+						"          LOYALTY_PROGRAM_ID as integer,",
+						"          REWARD_CATEGORY_ID as integer,",
+						"          REWARD_TYPE_NAME as string,",
+						"          REWARD_TYPE_RETAIL_VALUE as decimal(19,4),",
+						"          REWARD_TYPE_BASE_POINT_VALUE as decimal(19,4),",
+						"          REWARD_TYPE_POINT_VALUE as decimal(19,4),",
+						"          REWARD_TYPE_COST_VALUE as decimal(19,4),",
+						"          REWARD_TYPE_FLAGS as integer,",
+						"          REWARD_TYPE_FILTER_FLAGS as integer,",
+						"          REWARD_TYPE_DESCRIPTION as string,",
+						"          REWARD_TYPE_ISSUE_LIMIT_FLAGS as integer,",
+						"          REWARD_TYPE_ISSUE_LIMIT as integer,",
+						"          REWARD_TYPE_MEMBER_ISSUE_FLAGS as integer,",
+						"          REWARD_TYPE_MEMBER_ISSUE_PARAM as integer,",
+						"          REWARD_TYPE_MEMBER_ISSUE_RANGE as integer,",
+						"          REWARD_TYPE_SLIP_FORMAT_TYPE_ID as integer,",
+						"          REWARD_TYPE_BARCODE_FLAGS as integer,",
+						"          REWARD_TYPE_BARCODE as string,",
+						"          REWARD_TYPE_MORE_INFO_URL as string,",
+						"          REWARD_TYPE_EXPIRE_FLAGS as integer,",
+						"          REWARD_TYPE_EXPIRE_PARAM as integer,",
+						"          REWARD_TYPE_EXPIRE_DATESTAMP as timestamp,",
+						"          APP_SLIP_TYPE_REWARD_ID as integer,",
+						"          DEVICE_SLIP_TYPE_REWARD_ID as integer,",
+						"          VARIABLE_REWARD_COST_ID as integer,",
+						"          VARIABLE_REWARD_POINT_ID as integer,",
+						"          VARIABLE_REWARD_AMT_MIN as decimal(19,4),",
+						"          VARIABLE_REWARD_AMT_MAX as decimal(19,4),",
+						"          THUMBNAIL_REWARD_TYPE_IMAGE_ID as integer,",
+						"          FEATURE_REWARD_TYPE_IMAGE_ID as integer,",
+						"          DETAIL_REWARD_TYPE_IMAGE_ID as integer,",
+						"          REWARD_TYPE_EXTERNAL_REF as string,",
+						"          STAT_TOTAL_ISSUED as integer,",
+						"          STAT_TOTAL_REDEEMED as integer,",
+						"          STAT_TOTAL_CANCELLED as integer,",
+						"          START_FROM_APP_DAY_ID as integer,",
+						"          REWARD_TYPE_DELIVERY_FLAGS as integer,",
+						"          EMAIL_TEMPLATE_ID as integer,",
+						"          TEXT_TEMPLATE_ID as integer,",
+						"          NOTIFY_EMAIL_TEMPLATE_ID as integer,",
+						"          NOTIFY_TEXT_TEMPLATE_ID as integer,",
+						"          GUID as string,",
+						"          REWARD_TYPE_ISSUE_COUNT as integer,",
+						"          REWARD_TYPE_ISSUE_COUNT_TIMESTAMP as timestamp,",
+						"          VARIABLE_REWARD_FROM_POINTS as decimal(19,4),",
+						"          VARIABLE_REWARD_PER_VALUE as decimal(19,4),",
+						"          TOTAL_REDEEMED as integer,",
+						"          TOTAL_EXPIRED as integer,",
+						"          TOTAL_ISSUED_IN_30_DAYS as integer,",
+						"          TOTAL_ISSUED_IN_31_TO_60_DAYS as integer,",
+						"          TOTAL_ISSUED_IN_61_TO_90_DAYS as integer,",
+						"          TOTAL_ISSUED_OVER_90_DAYS as integer,",
+						"          TOTAL_CANCELLED as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT * FROM dbo.REWARD_TYPE WHERE REWARD_TYPE_NAME IS NOT NULL',",
+						"     format: 'query') ~> RewardTypeTbl",
+						"MemberRewardTbl, RewardTypeTbl join(MemberRewardTbl@REWARD_TYPE_ID == RewardTypeTbl@REWARD_TYPE_ID,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> JoinMRandRT",
+						"JoinMRandRT filter(REDEEM_TIMESTAMP >= subDays(currentTimestamp(), 7)) ~> FilterWeeklyRedemptions",
+						"FilterWeeklyRedemptions derive(TIMESTAMP = currentTimestamp()) ~> Timestamp",
+						"Timestamp aggregate(groupBy(TIMESTAMP,",
+						"          MemberRewardTbl@REWARD_TYPE_ID,",
+						"          REWARD_TYPE_NAME),",
+						"     REDEEMED_COUNT = count(MemberRewardTbl@REWARD_TYPE_ID)) ~> WeeklyRedeemed",
+						"WeeklyRedeemed sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> Redemptions"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/WeeklyRedemptionsTbl')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_Weekly_Transactions')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Get Transaction based on dates",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "TransactionTbl",
+								"type": "DatasetReference"
+							},
+							"name": "TransactionTbl",
+							"description": "Contains all Transaction data"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "WeeklyTransactionsTbl",
+								"type": "DatasetReference"
+							},
+							"name": "WeeklyTransactions"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterWeeklyTransactions"
+						},
+						{
+							"name": "CountWeeklyTransactions",
+							"description": "Counts the Weekly Transactions by APP_TRANSACTION_ID"
+						},
+						{
+							"name": "CurrentTimestamp",
+							"description": "Adding Current Timestamp"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          APP_TRANSACTION_ID as integer,",
+						"          LOYALTY_PROGRAM_ID as integer,",
+						"          MEMBER_ID as integer,",
+						"          TRANSACTION_TYPE_ID as integer,",
+						"          LOCATION_ID as integer,",
+						"          EVENT_ID as integer,",
+						"          DEVICE_ID as integer,",
+						"          IMPORT_SOURCE_ID as integer,",
+						"          PARI_DEVICE_TYPE_ID as integer,",
+						"          PARI_TRACK_ID as integer,",
+						"          PARI_POOL_ID as integer,",
+						"          PARI_BET_COUNT as integer,",
+						"          PARI_RACE as integer,",
+						"          TRANSACTION_TIMESTAMP as timestamp,",
+						"          ACTIVITY_TIMESTAMP as timestamp,",
+						"          APP_DAY_ID as integer,",
+						"          BOOKING_APP_DAY_ID as integer,",
+						"          TRANSACTION_POINT_ID as integer,",
+						"          TRANSACTION_PROFIT_ID as integer,",
+						"          TRANSACTION_RULE_ID as integer,",
+						"          TRANSACTION_RETAIL_VALUE as decimal(19,4),",
+						"          TRANSACTION_PROFIT_VALUE as decimal(19,4),",
+						"          TRANSACTION_WON_VALUE as decimal(19,4),",
+						"          TRANSACTION_BASE_POINT_VALUE as decimal(19,4),",
+						"          TRANSACTION_POINT_VALUE as decimal(19,4),",
+						"          TRANSACTION_EXTERNAL_REF as string,",
+						"          TRANSACTION_FLAGS as integer,",
+						"          TRANSACTION_PROC_STATS_FLAGS as integer,",
+						"          MEMBER_ACCOUNT_ID_USED as string,",
+						"          APP_TRANSACTION_BASKET_ID as integer,",
+						"          APP_TRANSACTION_AUDIT_USER as string,",
+						"          TRANSFER_APP_TRANSACTION_ID as integer,",
+						"          GUID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> TransactionTbl",
+						"TransactionTbl filter(TRANSACTION_TIMESTAMP >= subDays(currentTimestamp(), 7)) ~> FilterWeeklyTransactions",
+						"CurrentTimestamp aggregate(groupBy(TIMESTAMP),",
+						"     TRANSACTION_COUNT = count(APP_TRANSACTION_ID)) ~> CountWeeklyTransactions",
+						"FilterWeeklyTransactions derive(TIMESTAMP = currentTimestamp()) ~> CurrentTimestamp",
+						"CountWeeklyTransactions sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> WeeklyTransactions"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/WeeklyTransactionsTbl')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Count_Members')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Count_Total_Members",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_Total_Members",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"MemberTbl": {},
+									"TotalMemberTbl": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Count_Total_Active_Members",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Count_Total_Members",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_Active_Members",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"MemberTbl": {},
+									"MemberDeleteTbl": {},
+									"TransactionTbl": {},
+									"ActiveMemberTbl": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Count_Weekly_Active_Members",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Count_Total_Active_Members",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_Weekly_Active_Members",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"MemberTbl": {},
+									"MemberDeleteTbl": {},
+									"TransactionTbl": {},
+									"WeeklyActiveMemberTbl": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-02-14T05:11:18Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/DF_Total_Members')]",
+				"[concat(variables('factoryId'), '/dataflows/DF_Active_Members')]",
+				"[concat(variables('factoryId'), '/dataflows/DF_Weekly_Active_Members')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Count_Products')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Count_Total_Products",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_Total_Products",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"ProductTbl": {},
+									"TotalProductTbl": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Count_Active_Products",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Count_Total_Products",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_Total_Active_Products",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"AppTransactionTbl": {},
+									"AppTransactionBasketProductTbl": {},
+									"ProductTbl": {},
+									"ActiveProductsTbl": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Count_Weekly_Active_Products",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Count_Active_Products",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_Weekly_Active_Products",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"AppTransactionTbl": {},
+									"AppTransactionBasketProductTbl": {},
+									"ProductTbl": {},
+									"WeeklyActiveProductsTbl": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-02-22T03:53:47Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/DF_Total_Products')]",
+				"[concat(variables('factoryId'), '/dataflows/DF_Total_Active_Products')]",
+				"[concat(variables('factoryId'), '/dataflows/DF_Weekly_Active_Products')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Count_Promotions')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Count_Total_Promotions",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_Total_Promotions",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"TransactionTbl": {},
+									"TotalPromotions": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Count_Weekly_Promotions",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Count_Total_Promotions",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_Weekly_Promotions",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"TransactionTbl": {},
+									"TotalPromotions": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-02-15T09:55:28Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/DF_Total_Promotions')]",
+				"[concat(variables('factoryId'), '/dataflows/DF_Weekly_Promotions')]"
+			]
+		}
+	]
+}

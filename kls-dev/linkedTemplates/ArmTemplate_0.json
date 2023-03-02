@@ -1,0 +1,1544 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "kls-dev"
+		},
+		"AzureBlobStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
+		},
+		"AzureBlobStorage2_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage2'"
+		},
+		"kls_database_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'kls_database'"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorage1_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage2')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorage2_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/kls_database')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('kls_database_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ActiveMemberTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "ACTIVE_MEMBERS"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/kls_database')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ActiveProductsTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "ACTIVE_PRODUCTS"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/kls_database')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AppTransactionBasketProductTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "APP_TRANSACTION_BASKET_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "APP_TRANSACTION_BASKET_PRODUCT_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "PRODUCT_ITEM_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "FINAL_UNIT_PRICE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "BASE_POINTS",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "BONUS_POINTS",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "PROFIT_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "APP_TRANSACTION_BASKET_PRODUCT_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "GUID",
+						"type": "uniqueidentifier"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "APP_TRANSACTION_BASKET_PRODUCT"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/kls_database')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Avro1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Avro",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "dataexport.prod-03.AzureBlob.integration.63e287fe04a57e400a9e366a+0+0000000002.avro",
+						"folderPath": "currents/dataexport.prod-03.AzureBlob.integration.63e287fe04a57e400a9e366a/event_type=users.messages.email.Send/date=2023-02-07-19/1148/prod-03",
+						"container": "braze-campaign-kpis"
+					}
+				},
+				"schema": {
+					"type": "record",
+					"name": "dataexport.S3.inner.users.messages.email.Send",
+					"doc": "when we send an email to a user",
+					"fields": [
+						{
+							"name": "id",
+							"doc": "globally unique id for this event",
+							"type": "string"
+						},
+						{
+							"name": "user_id",
+							"doc": "BSON id of the user that we sent the email to",
+							"type": "string"
+						},
+						{
+							"name": "dispatch_id",
+							"doc": "dispatch_id of the record",
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						{
+							"name": "external_user_id",
+							"doc": "external user id of the user",
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						{
+							"name": "time",
+							"doc": "unix timestamp at which we sent the email",
+							"type": "int"
+						},
+						{
+							"name": "timezone",
+							"doc": "timezone of the user",
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						{
+							"name": "campaign_id",
+							"doc": "API ID of the campaign this email belongs to",
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						{
+							"name": "campaign_name",
+							"doc": "name of the campaign",
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						{
+							"name": "message_variation_id",
+							"doc": "API ID of the message variation we sent",
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						{
+							"name": "message_variation_name",
+							"doc": "name of the message variation",
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						{
+							"name": "email_address",
+							"doc": "email address of the user",
+							"type": "string"
+						},
+						{
+							"name": "canvas_id",
+							"doc": "API ID of the canvas this email belongs to",
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						{
+							"name": "canvas_name",
+							"doc": "name of the canvas",
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						{
+							"name": "canvas_variation_id",
+							"doc": "API ID of the canvas variation this user received",
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						{
+							"name": "canvas_variation_name",
+							"doc": "Name of the canvas variation this user received",
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						{
+							"name": "canvas_step_id",
+							"doc": "API ID of the canvas step this email belongs to",
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						{
+							"name": "canvas_step_name",
+							"doc": "Name of the canvas step",
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						{
+							"name": "send_id",
+							"doc": "message send ID this message belongs to",
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						{
+							"name": "ip_pool",
+							"doc": "IP Pool from which the email send was made",
+							"type": [
+								"null",
+								"string"
+							]
+						}
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MemberDeleteTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "MEMBER_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "COMBINED_INTO_MEMBER_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_NAME",
+						"type": "nvarchar"
+					},
+					{
+						"name": "AUDIT_USER",
+						"type": "nvarchar"
+					},
+					{
+						"name": "MEMBER_ACCOUNT_ID",
+						"type": "nvarchar"
+					},
+					{
+						"name": "MEMBER_LAST_EMAIL",
+						"type": "nvarchar"
+					},
+					{
+						"name": "MEMBER_DELETE_TIMESTAMP",
+						"type": "smalldatetime",
+						"precision": 16,
+						"scale": 0
+					},
+					{
+						"name": "AUDIT_NOTE",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TOTAL_POINTS_EARNED",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "TOTAL_POINTS_DEDUCTED",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "TOTAL_POINTS_USED",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "TOTAL_POINTS_EXPIRED",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "MEMBER_DELETE_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_DELETE_COMPLETE_TIMESTAMP",
+						"type": "smalldatetime",
+						"precision": 16,
+						"scale": 0
+					},
+					{
+						"name": "GUID",
+						"type": "uniqueidentifier"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "MEMBER_DELETE"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/kls_database')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MemberRewardTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "MEMBER_REWARD_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "LOYALTY_PROGRAM_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_TYPE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DEVICE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "LOCATION_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "EVENT_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_REWARD_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_BASE_POINT_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "REWARD_POINT_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "REWARD_RETAIL_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "REWARD_USED_RETAIL_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "REWARD_COST_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "ISSUE_TIMESTAMP",
+						"type": "smalldatetime",
+						"precision": 16,
+						"scale": 0
+					},
+					{
+						"name": "ISSUE_AUDIT_USER",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ORIGINAL_MEMBER_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CANCEL_TIMESTAMP",
+						"type": "smalldatetime",
+						"precision": 16,
+						"scale": 0
+					},
+					{
+						"name": "CANCEL_AUDIT_USER",
+						"type": "nvarchar"
+					},
+					{
+						"name": "REDEEM_TIMESTAMP",
+						"type": "smalldatetime",
+						"precision": 16,
+						"scale": 0
+					},
+					{
+						"name": "REDEEM_APP_DAY_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REDEEM_AUDIT_USER",
+						"type": "nvarchar"
+					},
+					{
+						"name": "REDEEM_LOCATION_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "EXPIRE_TIMESTAMP",
+						"type": "smalldatetime",
+						"precision": 16,
+						"scale": 0
+					},
+					{
+						"name": "EXPIRE_APP_DAY_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "APP_DAY_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "VARIABLE_REWARD_POINT_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "VARIABLE_REWARD_COST_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_PROC_STATS_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CASHIER_SESSION_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CASHIER_SESSION_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_REWARD_BARCODE",
+						"type": "varchar"
+					},
+					{
+						"name": "MEMBER_REWARD_BARCODE_PIN",
+						"type": "varchar"
+					},
+					{
+						"name": "DOTD_PROMO_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DOTD_PROMO_APP_DAY_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TRANSFER_TARGET_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DELIVERED_COUNT",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "SALT",
+						"type": "varchar"
+					},
+					{
+						"name": "ORDER_NUMBER",
+						"type": "varchar"
+					},
+					{
+						"name": "GUID",
+						"type": "uniqueidentifier"
+					},
+					{
+						"name": "VARIABLE_REWARD_FROM_POINTS",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "VARIABLE_REWARD_PER_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "MEMBER_REWARD"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/kls_database')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MemberTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "MEMBER_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_PREFIX_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_FIRST_NAME",
+						"type": "nvarchar"
+					},
+					{
+						"name": "MEMBER_MIDDLE_NAME",
+						"type": "nvarchar"
+					},
+					{
+						"name": "MEMBER_LAST_NAME",
+						"type": "nvarchar"
+					},
+					{
+						"name": "MEMBER_SUFFIX",
+						"type": "nvarchar"
+					},
+					{
+						"name": "MEMBER_BIRTHDAY",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "MEMBER_BIRTHDAY_YEAR",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_BIRTHDAY_DAY",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_BIRTHDAY_MONTH",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_AGE",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_ADD_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "MEMBER_ADD_APP_DAY_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_GENDER",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_PORTAL_PASSWORD",
+						"type": "nvarchar"
+					},
+					{
+						"name": "MEMBER_PASSWORD_HASH",
+						"type": "nvarchar"
+					},
+					{
+						"name": "MEMBER_PASSWORD_SALT",
+						"type": "nvarchar"
+					},
+					{
+						"name": "MEMBER_PASSWORD_CHANGE_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "MEMBER_PORTAL_PIN",
+						"type": "nvarchar"
+					},
+					{
+						"name": "MEMBER_CONTACT_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_EMAIL_OPT_LAST_CHANGE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "MEMBER_MAIL_OPT_LAST_CHANGE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "MEMBER_PHONE_OPT_LAST_CHANGE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "MEMBER_TEXT_OPT_LAST_CHANGE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "MEMBER_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_EXPORT_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CORE_USER_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_PROC_STATS_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_PREF_DELIVERY_NON_OFFERS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_PREF_DELIVERY_OFFERS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_PREF_LANGUAGE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "HEAD_MEMBER_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "GUID",
+						"type": "uniqueidentifier"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "MEMBER"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/kls_database')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ProductTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "PRODUCT_ITEM_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "PRODUCT_ITEM_NAME",
+						"type": "nchar"
+					},
+					{
+						"name": "PRODUCT_ITEM_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "PRODUCT_ITEM_EXTERNAL_REF",
+						"type": "nchar"
+					},
+					{
+						"name": "GUID",
+						"type": "uniqueidentifier"
+					},
+					{
+						"name": "PRODUCT_ITEM_DELETE_REF_FLAGS",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "PRODUCT_ITEM"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/kls_database')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RewardTypeTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "REWARD_TYPE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "LOYALTY_PROGRAM_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_CATEGORY_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_TYPE_NAME",
+						"type": "nvarchar"
+					},
+					{
+						"name": "REWARD_TYPE_RETAIL_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "REWARD_TYPE_BASE_POINT_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "REWARD_TYPE_POINT_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "REWARD_TYPE_COST_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "REWARD_TYPE_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_TYPE_FILTER_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_TYPE_DESCRIPTION",
+						"type": "nvarchar"
+					},
+					{
+						"name": "REWARD_TYPE_ISSUE_LIMIT_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_TYPE_ISSUE_LIMIT",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_TYPE_MEMBER_ISSUE_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_TYPE_MEMBER_ISSUE_PARAM",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_TYPE_MEMBER_ISSUE_RANGE",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_TYPE_SLIP_FORMAT_TYPE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_TYPE_BARCODE_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_TYPE_BARCODE",
+						"type": "varchar"
+					},
+					{
+						"name": "REWARD_TYPE_MORE_INFO_URL",
+						"type": "nvarchar"
+					},
+					{
+						"name": "REWARD_TYPE_EXPIRE_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_TYPE_EXPIRE_PARAM",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_TYPE_EXPIRE_DATESTAMP",
+						"type": "smalldatetime",
+						"precision": 16,
+						"scale": 0
+					},
+					{
+						"name": "APP_SLIP_TYPE_REWARD_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DEVICE_SLIP_TYPE_REWARD_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "VARIABLE_REWARD_COST_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "VARIABLE_REWARD_POINT_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "VARIABLE_REWARD_AMT_MIN",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "VARIABLE_REWARD_AMT_MAX",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "THUMBNAIL_REWARD_TYPE_IMAGE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "FEATURE_REWARD_TYPE_IMAGE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DETAIL_REWARD_TYPE_IMAGE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_TYPE_EXTERNAL_REF",
+						"type": "nvarchar"
+					},
+					{
+						"name": "STAT_TOTAL_ISSUED",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "STAT_TOTAL_REDEEMED",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "STAT_TOTAL_CANCELLED",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "START_FROM_APP_DAY_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_TYPE_DELIVERY_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "EMAIL_TEMPLATE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TEXT_TEMPLATE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "NOTIFY_EMAIL_TEMPLATE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "NOTIFY_TEXT_TEMPLATE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "GUID",
+						"type": "uniqueidentifier"
+					},
+					{
+						"name": "REWARD_TYPE_ISSUE_COUNT",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "REWARD_TYPE_ISSUE_COUNT_TIMESTAMP",
+						"type": "smalldatetime",
+						"precision": 16,
+						"scale": 0
+					},
+					{
+						"name": "VARIABLE_REWARD_FROM_POINTS",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "VARIABLE_REWARD_PER_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "TOTAL_REDEEMED",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TOTAL_EXPIRED",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TOTAL_ISSUED_IN_30_DAYS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TOTAL_ISSUED_IN_31_TO_60_DAYS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TOTAL_ISSUED_IN_61_TO_90_DAYS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TOTAL_ISSUED_OVER_90_DAYS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TOTAL_CANCELLED",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "REWARD_TYPE"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/kls_database')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TotalMemberTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "TOTAL_MEMBER"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/kls_database')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TotalProductTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "TOTAL_PRODUCT"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/kls_database')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TotalPromotionTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "TOTAL_PROMOTION"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/kls_database')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TotalRedemptionsTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "TOTAL_REDEMPTIONS"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/kls_database')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TotalTransactionTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "TOTAL_TRANSACTION"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/kls_database')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TransactionTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "APP_TRANSACTION_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "LOYALTY_PROGRAM_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TRANSACTION_TYPE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "LOCATION_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "EVENT_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DEVICE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "IMPORT_SOURCE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "PARI_DEVICE_TYPE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "PARI_TRACK_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "PARI_POOL_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "PARI_BET_COUNT",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "PARI_RACE",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TRANSACTION_TIMESTAMP",
+						"type": "smalldatetime",
+						"precision": 16,
+						"scale": 0
+					},
+					{
+						"name": "ACTIVITY_TIMESTAMP",
+						"type": "smalldatetime",
+						"precision": 16,
+						"scale": 0
+					},
+					{
+						"name": "APP_DAY_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "BOOKING_APP_DAY_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TRANSACTION_POINT_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TRANSACTION_PROFIT_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TRANSACTION_RULE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TRANSACTION_RETAIL_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "TRANSACTION_PROFIT_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "TRANSACTION_WON_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "TRANSACTION_BASE_POINT_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "TRANSACTION_POINT_VALUE",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "TRANSACTION_EXTERNAL_REF",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TRANSACTION_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TRANSACTION_PROC_STATS_FLAGS",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MEMBER_ACCOUNT_ID_USED",
+						"type": "nvarchar"
+					},
+					{
+						"name": "APP_TRANSACTION_BASKET_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "APP_TRANSACTION_AUDIT_USER",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TRANSFER_APP_TRANSACTION_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "GUID",
+						"type": "uniqueidentifier"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "APP_TRANSACTION"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/kls_database')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WeeklyActiveMemberTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "WEEKLY_ACTIVE_MEMBER"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/kls_database')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WeeklyActiveProductsTbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "kls_database",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "WEEKLY_ACTIVE_PRODUCTS"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/kls_database')]"
+			]
+		}
+	]
+}
