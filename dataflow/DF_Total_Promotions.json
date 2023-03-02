@@ -1,7 +1,7 @@
 {
-	"name": "DF_Weekly_Transactions",
+	"name": "DF_Total_Promotions",
 	"properties": {
-		"description": "Get Transaction based on dates",
+		"description": "Counts all the Promotions",
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
@@ -10,30 +10,24 @@
 						"referenceName": "TransactionTbl",
 						"type": "DatasetReference"
 					},
-					"name": "TransactionTbl",
-					"description": "Contains all Transaction data"
+					"name": "TransactionTbl"
 				}
 			],
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "WeeklyTransactionsTbl",
+						"referenceName": "TotalPromotionTbl",
 						"type": "DatasetReference"
 					},
-					"name": "WeeklyTransactions"
+					"name": "TotalPromotions"
 				}
 			],
 			"transformations": [
 				{
-					"name": "FilterWeeklyTransactions"
+					"name": "TIMESTAMP"
 				},
 				{
-					"name": "CountWeeklyTransactions",
-					"description": "Counts the Weekly Transactions by APP_TRANSACTION_ID"
-				},
-				{
-					"name": "CurrentTimestamp",
-					"description": "Adding Current Timestamp"
+					"name": "TotalPromotionCount"
 				}
 			],
 			"scriptLines": [
@@ -75,12 +69,12 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     format: 'table') ~> TransactionTbl",
-				"TransactionTbl filter(TRANSACTION_TIMESTAMP >= subDays(currentTimestamp(), 7)) ~> FilterWeeklyTransactions",
-				"CurrentTimestamp aggregate(groupBy(TIMESTAMP),",
-				"     TRANSACTION_COUNT = count(APP_TRANSACTION_ID)) ~> CountWeeklyTransactions",
-				"FilterWeeklyTransactions derive(TIMESTAMP = currentTimestamp()) ~> CurrentTimestamp",
-				"CountWeeklyTransactions sink(allowSchemaDrift: true,",
+				"     query: 'SELECT * FROM APP_TRANSACTION WHERE TRANSACTION_POINT_VALUE > TRANSACTION_BASE_POINT_VALUE',",
+				"     format: 'query') ~> TransactionTbl",
+				"TransactionTbl derive(TIMESTAMP = currentTimestamp()) ~> TIMESTAMP",
+				"TIMESTAMP aggregate(groupBy(TIMESTAMP),",
+				"     PROMOTION_COUNT = countAllDistinct(APP_TRANSACTION_ID)) ~> TotalPromotionCount",
+				"TotalPromotionCount sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
 				"     insertable:true,",
@@ -89,8 +83,7 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     saveOrder: 1,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> WeeklyTransactions"
+				"     errorHandlingOption: 'stopOnFirstError') ~> TotalPromotions"
 			]
 		}
 	}

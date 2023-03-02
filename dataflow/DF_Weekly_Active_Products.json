@@ -159,7 +159,6 @@
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> JoinAll",
 				"Timestamp aggregate(groupBy(TIMESTAMP,",
-				"          TRANSACTION_TIMESTAMP,",
 				"          PRODUCT_ITEM_ID,",
 				"          PRODUCT_ITEM_NAME),",
 				"     ACTIVE_PRODUCT_COUNT = countAllDistinct(APP_TRANSACTION_ID)) ~> CountActiveProducts",

@@ -1,11 +1,9 @@
 {
-	"name": "Count_Redemptions",
+	"name": "Count_Promotions",
 	"properties": {
-		"description": "Counts the number weekly redemptions",
 		"activities": [
 			{
-				"name": "Count_Weekly_Redemptions",
-				"description": "Counts the number of weekly redemptions",
+				"name": "Count_Total_Promotions",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -18,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "DF_Weekly_Reward_Redemptions",
+						"referenceName": "DF_Total_Promotions",
 						"type": "DataFlowReference"
 					},
 					"compute": {
@@ -29,13 +27,13 @@
 				}
 			},
 			{
-				"name": "Total_Redemptions",
+				"name": "Count_Weekly_Promotions",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "Count_Weekly_Redemptions",
+						"activity": "Count_Total_Promotions",
 						"dependencyConditions": [
-							"Succeeded"
+							"Completed"
 						]
 					}
 				],
@@ -49,7 +47,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "DF_Total_Reward_Redemptions",
+						"referenceName": "DF_Weekly_Promotions",
 						"type": "DataFlowReference"
 					},
 					"compute": {
@@ -61,7 +59,7 @@
 			}
 		],
 		"annotations": [],
-		"lastPublishTime": "2023-02-22T05:26:57Z"
+		"lastPublishTime": "2023-02-15T09:55:28Z"
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
 }

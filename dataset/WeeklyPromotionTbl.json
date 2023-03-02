@@ -1,5 +1,5 @@
 {
-	"name": "WeeklyRedemptionsTbl",
+	"name": "WeeklyPromotionTbl",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "kls_database",
@@ -10,7 +10,7 @@
 		"schema": [],
 		"typeProperties": {
 			"schema": "dbo",
-			"table": "WEEKLY_REDEMPTIONS"
+			"table": "WEEKLY_PROMOTION"
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"
