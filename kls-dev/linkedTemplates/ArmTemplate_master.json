@@ -19,6 +19,18 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'kls_database'"
 		},
+		"KLS REST_clientSecret": {
+			"type": "secureString",
+			"metadata": "Secure string for 'clientSecret' of 'KLS REST'"
+		},
+		"KLS REST_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://azure-qa.kognitivloyalty.com/Auth/token"
+		},
+		"KLS REST_properties_typeProperties_clientId": {
+			"type": "string",
+			"defaultValue": "123345"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -54,6 +66,15 @@
 					},
 					"kls_database_connectionString": {
 						"value": "[parameters('kls_database_connectionString')]"
+					},
+					"KLS REST_clientSecret": {
+						"value": "[parameters('KLS REST_clientSecret')]"
+					},
+					"KLS REST_properties_typeProperties_url": {
+						"value": "[parameters('KLS REST_properties_typeProperties_url')]"
+					},
+					"KLS REST_properties_typeProperties_clientId": {
+						"value": "[parameters('KLS REST_properties_typeProperties_clientId')]"
 					}
 				}
 			},

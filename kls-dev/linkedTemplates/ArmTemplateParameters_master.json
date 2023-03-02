@@ -14,6 +14,15 @@
 		"kls_database_connectionString": {
 			"value": ""
 		},
+		"KLS REST_clientSecret": {
+			"value": ""
+		},
+		"KLS REST_properties_typeProperties_url": {
+			"value": "https://azure-qa.kognitivloyalty.com/Auth/token"
+		},
+		"KLS REST_properties_typeProperties_clientId": {
+			"value": "123345"
+		},
 		"containerUri": {
 			"value": ""
 		},

@@ -18,6 +18,18 @@
 		"kls_database_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'kls_database'"
+		},
+		"KLS REST_clientSecret": {
+			"type": "secureString",
+			"metadata": "Secure string for 'clientSecret' of 'KLS REST'"
+		},
+		"KLS REST_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://azure-qa.kognitivloyalty.com/Auth/token"
+		},
+		"KLS REST_properties_typeProperties_clientId": {
+			"type": "string",
+			"defaultValue": "123345"
 		}
 	},
 	"variables": {
@@ -3867,6 +3879,109 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/TransactionTbl')]",
 				"[concat(variables('factoryId'), '/datasets/WeeklyTransactionsTbl')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/braze_data')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AvroSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": false,
+									"enablePartitionDiscovery": false
+								}
+							},
+							"sink": {
+								"type": "RestSink",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": 10,
+								"requestMethod": "POST",
+								"writeBatchSize": 10000,
+								"httpCompressionType": "none"
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "Avro1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "RestResource1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Avro1')]",
+				"[concat(variables('factoryId'), '/datasets/RestResource1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/KLS REST')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('KLS REST_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "OAuth2ClientCredential",
+					"clientId": "[parameters('KLS REST_properties_typeProperties_clientId')]",
+					"clientSecret": {
+						"type": "SecureString",
+						"value": "[parameters('KLS REST_clientSecret')]"
+					},
+					"tokenEndpoint": "https://azure-qa.kognitivloyalty.com/Auth/token"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RestResource1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "KLS REST",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/KLS REST')]"
 			]
 		}
 	]
