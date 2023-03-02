@@ -16,13 +16,14 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "AvroSource",
+						"type": "DelimitedTextSource",
 						"storeSettings": {
 							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "currents/dataexport.prod-03.AzureBlob.integration.63e287fe04a57e400a9e366a/event_type=users.messages.email.Send/date=2023-02-07-17/1148/prod-03",
-							"wildcardFileName": "*.avro",
 							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
 						}
 					},
 					"sink": {
@@ -47,7 +48,7 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "Avro1",
+						"referenceName": "myCSVfile",
 						"type": "DatasetReference"
 					}
 				],
@@ -57,38 +58,6 @@
 						"type": "DatasetReference"
 					}
 				]
-			},
-			{
-				"name": "Transform",
-				"description": "Change from Avro to JSON format, or CSV format",
-				"type": "ExecuteDataFlow",
-				"dependsOn": [
-					{
-						"activity": "get data",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataflow": {
-						"referenceName": "dataflow3",
-						"type": "DataFlowReference"
-					},
-					"compute": {
-						"coreCount": 8,
-						"computeType": "General"
-					},
-					"traceLevel": "Fine"
-				}
 			}
 		],
 		"annotations": []
